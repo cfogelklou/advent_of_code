@@ -1,4 +1,5 @@
 
+#include <iostream>
 #include <vector>
 #include <string>
 #include <gtest/gtest.h>
@@ -531,12 +532,38 @@ const char day10Input[] =
 
 class Point {
 public:
-  Point() {
-
+  Point()
+    :x(0),y(0),vx(0),vy(0) {
+  }
+  Point(std::string& line)
+    :x(0), y(0), vx(0), vy(0) {
+    GetPointFromLine(line);
   }
   ~Point() {
 
   }
+
+  void GetPointFromLine(std::string& line)
+  {
+    std::string xs = line.substr(10, 6);
+    x = std::stoi(xs);
+
+    std::string ys = line.substr(18, 6);
+    y = std::stoi(ys);
+
+    std::string vxs = line.substr(36, 2);
+    vx = std::stoi(vxs);
+
+    std::string vys = line.substr(40, 2);
+    vy = std::stoi(vys);
+  }
+
+  double GetDistanceFromPoint(const Point& rhs) {
+    double disty = rhs.y - y;
+    double distx = rhs.x - x;
+    return sqrt(disty * disty + distx * distx);
+  }
+
   int x;
   int y;
   int vx;
@@ -544,46 +571,63 @@ public:
 };
 
 // "position=<-30052,  -9918> velocity=< 3,  1>\r\n"
-#include <iostream>
-#include "advent.h"
 
 
-typedef std::vector<Point> PointsAry;
-
-
-void GetPointFromLine(std::string& line)
-{
-  // Do something with `line`
-  std::cout << line << std::endl;
-
-  std::string xs = line.substr(10, 6);
-  int x = std::stoi(xs);
-  std::cout << "x:" << x << std::endl;
-
-  std::string ys = line.substr(18, 6);
-  int y = std::stoi(ys);
-  std::cout << "y:" << y << std::endl;
-
-  std::string vxs = line.substr(36, 2);
-  int vx = std::stoi(vxs);
-  std::cout << "vx:" << vx << std::endl;
-
-  std::string vys = line.substr(40, 2);
-  int vy = std::stoi(vys);
-  std::cout << "vy:" << vy << std::endl;
-}
 
 
 TEST(TestRt, Day10){
+  typedef std::vector<Point> PointsAry;
+
   std::istringstream iss(day10Input);
   PointsAry points;
 
+  // Get all lines from the input file.
   std::string line;
   while (std::getline(iss, line))
   {
-    GetPointFromLine(line);
-
+    Point point(line);
+    points.push_back(point);
   }
+
+  std::cout << "Got " << points.size() << " points." << std::endl;
+
+  int seconds = 0;
+  double mindist = -1;
+  int mini = -1;
+  PointsAry::iterator i1 = points.begin();
+  PointsAry::iterator end1 = points.end();
+  while (i1 != end1) {
+
+    PointsAry::iterator i2 = points.begin();
+    PointsAry::iterator end2 = points.end();
+
+    double maxdist = -1;
+    int j = 0;
+    int maxj = -1;
+    while (i2 != end2) {
+
+      auto d = i1->GetDistanceFromPoint(*i2);
+      if (d > maxdist) {
+        maxdist = d;
+        maxj = j;
+      }
+      j++;
+      i2++;
+    }
+
+    if ((mindist < 0) || (maxdist > mindist)) {
+      mindist = maxdist;
+      mini = maxj;
+    }
+
+
+    seconds++;
+    i1++;
+  }
+
+  std::cout << mindist << " distance at time = " << mini << " seconds.";
+
+  // Now output the message.
 
 }
 
