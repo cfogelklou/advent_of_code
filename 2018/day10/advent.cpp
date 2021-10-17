@@ -2,6 +2,8 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <algorithm>
+#include <memory>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 using namespace testing;
@@ -533,10 +535,10 @@ const char day10Input[] =
 class Point {
 public:
   Point()
-    :x(0),y(0),vx(0),vy(0) {
+    :startX(0), startY(0), x(0),y(0),vx(0),vy(0) {
   }
   Point(std::string& line)
-    :x(0), y(0), vx(0), vy(0) {
+    :startX(0), startY(0), x(0), y(0), vx(0), vy(0) {
     GetPointFromLine(line);
   }
   ~Point() {
@@ -546,10 +548,10 @@ public:
   void GetPointFromLine(std::string& line)
   {
     std::string xs = line.substr(10, 6);
-    x = std::stoi(xs);
+    startX = x = std::stoi(xs);
 
     std::string ys = line.substr(18, 6);
-    y = std::stoi(ys);
+    startY = y = std::stoi(ys);
 
     std::string vxs = line.substr(36, 2);
     vx = std::stoi(vxs);
@@ -564,19 +566,33 @@ public:
     return sqrt(disty * disty + distx * distx);
   }
 
+  void Advance(const int seconds = 1) {
+    x = x + vx * seconds;
+    y = y + vy * seconds;
+  }
+
+  void Reset() {
+    x = startX;
+    y = startY;
+  }
+
+  void Print() {
+    std::cout << "startX:" << startX << ", " << "startY:" << startY << std::endl;
+  }
+
+  
+  int startX;
+  int startY;
   int x;
   int y;
   int vx;
   int vy;
 };
 
-// "position=<-30052,  -9918> velocity=< 3,  1>\r\n"
-
-
 
 
 TEST(TestRt, Day10){
-  typedef std::vector<Point> PointsAry;
+  typedef std::vector<std::shared_ptr<Point>> PointsAry;
 
   std::istringstream iss(day10Input);
   PointsAry points;
@@ -585,51 +601,72 @@ TEST(TestRt, Day10){
   std::string line;
   while (std::getline(iss, line))
   {
-    Point point(line);
-    points.push_back(point);
+    points.push_back(std::make_unique<Point>(Point(line)));
   }
 
   std::cout << "Got " << points.size() << " points." << std::endl;
 
+  auto printPoint = [](std::shared_ptr<Point>p) {
+    p->Print();
+  };
+  std::for_each(points.begin(), points.end(), printPoint);
+
+
+  double minMaximumDistanceBetweenPoints = -1;
+  int minSeconds = -1;
+  
+  bool decreasing = true;
   int seconds = 0;
-  double mindist = -1;
-  int mini = -1;
-  PointsAry::iterator i1 = points.begin();
-  PointsAry::iterator end1 = points.end();
-  while (i1 != end1) {
+  const int secondsIncrement = 16;
 
-    PointsAry::iterator i2 = points.begin();
-    PointsAry::iterator end2 = points.end();
+  // For each second...
+  while (decreasing) {
 
-    double maxdist = -1;
-    int j = 0;
-    int maxj = -1;
-    while (i2 != end2) {
+    // For each point p1, get the other point that is furthest away    
+    PointsAry::iterator p1 = points.begin();
+    PointsAry::iterator end1 = points.end();
+    double maximumDistanceFromP1 = -1;
+    double* pMax = &maximumDistanceFromP1;
+    while (p1 != end1) {
 
-      auto d = i1->GetDistanceFromPoint(*i2);
-      if (d > maxdist) {
-        maxdist = d;
-        maxj = j;
-      }
-      j++;
-      i2++;
+      auto doCompare = [p1, pMax](std::shared_ptr<Point>p2) {
+        Point& point2 = *p2;
+        auto d = p1.operator*()->GetDistanceFromPoint(point2);
+        if (d > *pMax) {
+          *pMax = d;
+        }
+      };
+
+      std::for_each(points.begin(), points.end(), doCompare);
+      p1++;
+    } // while (p1 != end1)
+
+    if ((minMaximumDistanceBetweenPoints < 0) || (maximumDistanceFromP1 <= minMaximumDistanceBetweenPoints)) {
+      minMaximumDistanceBetweenPoints = maximumDistanceFromP1;
+    }
+    else {
+      minSeconds = seconds - secondsIncrement;
+      std::cout << "Found minimum at " << minSeconds << " seconds, max distance between points is " << minMaximumDistanceBetweenPoints << std::endl;
+      decreasing = false;
     }
 
-    if ((mindist < 0) || (maxdist > mindist)) {
-      mindist = maxdist;
-      mini = maxj;
+    auto doAdvance = [secondsIncrement](std::shared_ptr<Point>p) {
+      p->Advance(secondsIncrement);
+    };
+
+    std::for_each(points.begin(), points.end(), doAdvance);
+    seconds += secondsIncrement;
+
+    if ((seconds & 0xff) == 0) {
+      std::cout << "At " << seconds << " seconds, max distance between points is " << minMaximumDistanceBetweenPoints << std::endl;
     }
-
-
-    seconds++;
-    i1++;
   }
-
-  std::cout << mindist << " distance at time = " << mini << " seconds.";
+  std::cout << minMaximumDistanceBetweenPoints << " distance at time = " << minSeconds << " seconds.";
 
   // Now output the message.
 
-  std::cout << endl;
+  std::cout << std::endl;
+
 
 
 
