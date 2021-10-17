@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <fstream>
 #include <memory>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -611,63 +612,143 @@ TEST(TestRt, Day10){
   };
   std::for_each(points.begin(), points.end(), printPoint);
 
-
-  double minMaximumDistanceBetweenPoints = -1;
   int minSeconds = -1;
-  
-  bool decreasing = true;
-  int seconds = 0;
-  const int secondsIncrement = 16;
+  const int secondsIncrement = 32;
+  {
+    double minMaximumDistanceBetweenPoints = -1;
+    bool decreasing = true;
+    int seconds = 0;
 
-  // For each second...
-  while (decreasing) {
+    // For each second...
+    while (decreasing) {
 
-    // For each point p1, get the other point that is furthest away    
-    PointsAry::iterator p1 = points.begin();
-    PointsAry::iterator end1 = points.end();
-    double maximumDistanceFromP1 = -1;
-    double* pMax = &maximumDistanceFromP1;
-    while (p1 != end1) {
+      // For each point p1, get the other point that is furthest away    
+      PointsAry::iterator p1 = points.begin();
+      PointsAry::iterator end1 = points.end();
+      double maximumDistanceFromP1 = -1;
+      double* pMax = &maximumDistanceFromP1;
+      while (p1 != end1) {
 
-      auto doCompare = [p1, pMax](std::shared_ptr<Point>p2) {
-        Point& point2 = *p2;
-        auto d = p1.operator*()->GetDistanceFromPoint(point2);
-        if (d > *pMax) {
-          *pMax = d;
-        }
+        auto doCompare = [p1, pMax](std::shared_ptr<Point>p2) {
+          Point& point2 = *p2;
+          auto d = p1.operator*()->GetDistanceFromPoint(point2);
+          if (d > * pMax) {
+            *pMax = d;
+          }
+        };
+
+        std::for_each(points.begin(), points.end(), doCompare);
+        p1++;
+      } // while (p1 != end1)
+
+      if ((minMaximumDistanceBetweenPoints < 0) || (maximumDistanceFromP1 <= minMaximumDistanceBetweenPoints)) {
+        minMaximumDistanceBetweenPoints = maximumDistanceFromP1;
+      }
+      else {
+        minSeconds = seconds - secondsIncrement;
+        std::cout << "Found minimum at " << minSeconds << " seconds, max distance between points is " << minMaximumDistanceBetweenPoints << std::endl;
+        decreasing = false;
+      }
+
+      auto doAdvance = [secondsIncrement](std::shared_ptr<Point>p) {
+        p->Advance(secondsIncrement);
       };
 
-      std::for_each(points.begin(), points.end(), doCompare);
-      p1++;
-    } // while (p1 != end1)
+      std::for_each(points.begin(), points.end(), doAdvance);
+      seconds += secondsIncrement;
 
-    if ((minMaximumDistanceBetweenPoints < 0) || (maximumDistanceFromP1 <= minMaximumDistanceBetweenPoints)) {
-      minMaximumDistanceBetweenPoints = maximumDistanceFromP1;
+      if ((seconds & 0xff) == 0) {
+        std::cout << "At " << seconds << " seconds, max distance between points is " << minMaximumDistanceBetweenPoints << std::endl;
+      }
     }
-    else {
-      minSeconds = seconds - secondsIncrement;
-      std::cout << "Found minimum at " << minSeconds << " seconds, max distance between points is " << minMaximumDistanceBetweenPoints << std::endl;
-      decreasing = false;
-    }
-
-    auto doAdvance = [secondsIncrement](std::shared_ptr<Point>p) {
-      p->Advance(secondsIncrement);
-    };
-
-    std::for_each(points.begin(), points.end(), doAdvance);
-    seconds += secondsIncrement;
-
-    if ((seconds & 0xff) == 0) {
-      std::cout << "At " << seconds << " seconds, max distance between points is " << minMaximumDistanceBetweenPoints << std::endl;
-    }
+    std::cout << minMaximumDistanceBetweenPoints << " distance at time = " << minSeconds << " seconds.";
   }
-  std::cout << minMaximumDistanceBetweenPoints << " distance at time = " << minSeconds << " seconds.";
 
   // Now output the message.
 
   std::cout << std::endl;
 
+  std::fstream fileout("advent_2018_day_10.txt", std::ios_base::out);
 
+  auto doResetAndAdvance = [minSeconds](std::shared_ptr<Point>p) {
+    p->Reset();
+    p->Advance(minSeconds);
+  };
+  std::for_each(points.begin(), points.end(), doResetAndAdvance);
+
+  for (int seconds = minSeconds; seconds < minSeconds + secondsIncrement; seconds++) {
+
+    int minX = 1000000;
+    int maxX = -1;
+    int minY = 1000000;
+    int maxY = -1;
+
+    auto getMaxDim = [&minX, &maxX, &minY, &maxY](std::shared_ptr<Point>p1) {
+      if (p1->x > maxX) {
+        maxX = p1->x;
+      }
+      if (p1->y > maxY) {
+        maxY = p1->y;
+      }
+      if (p1->x < minX) {
+        minX = p1->x;
+      }
+      if (p1->y < minY) {
+        minY = p1->y;
+      }
+    };
+
+    std::for_each(points.begin(), points.end(), getMaxDim);
+
+
+    const int widthX = maxX - minX;
+    const int widthY = maxY - minY;
+    std::vector<bool *> tbl(widthY);
+    assert(tbl.size() == widthY);
+    for (int y = 0; y < widthY; y++) {
+      tbl[y] = new bool[widthX];
+    }
+
+    auto prickOff = [&tbl, minX, minY, widthX, widthY](std::shared_ptr<Point>p1) {
+      const int x = p1->x - minX;
+      const int y = p1->y - minY;
+      assert(y < widthY);
+      assert(y < tbl.size());
+      bool* xline = tbl[y];
+      assert(x < widthX);
+      xline[x] = true;
+    };
+
+    std::for_each(points.begin(), points.end(), prickOff);
+
+    
+    auto printline = [&fileout, widthX](bool* xline) {
+      for (int x = 0; x < widthX; x++) {
+        const auto c = (xline[x]) ? "#" : ".";
+        std::cout << c;
+        fileout << c;
+      }
+      std::cout << std::endl;
+
+    };
+    std::for_each(tbl.begin(), tbl.end(), printline);
+
+    auto doAdvance = [secondsIncrement](std::shared_ptr<Point>p) {
+      p->Advance();
+    };
+    std::for_each(points.begin(), points.end(), doAdvance);
+
+    for (int x = 0; x < widthX; x++) {
+      delete[] tbl[x];
+    }
+
+
+    std::cout << std::endl;
+    fileout << std::endl;
+  }
+
+
+  std::cout << std::endl;
 
 
 
