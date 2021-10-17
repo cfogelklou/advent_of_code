@@ -613,7 +613,7 @@ TEST(TestRt, Day10){
   std::for_each(points.begin(), points.end(), printPoint);
 
   int minSeconds = -1;
-  const int secondsIncrement = 8;
+  int secondsIncrement = 16;
   {
     double minMaximumDistanceBetweenPoints = -1;
     bool decreasing = true;
@@ -660,8 +660,12 @@ TEST(TestRt, Day10){
       if ((seconds & 0xff) == 0) {
         std::cout << "At " << seconds << " seconds, max distance between points is " << minMaximumDistanceBetweenPoints << std::endl;
       }
+
+      secondsIncrement = (minMaximumDistanceBetweenPoints < 4000) ? 1 : secondsIncrement;
+
     }
     std::cout << minMaximumDistanceBetweenPoints << " distance at time = " << minSeconds << " seconds.";
+
   }
 
   // Now output the message.
@@ -670,7 +674,7 @@ TEST(TestRt, Day10){
 
   std::fstream fileout("advent_2018_day_10.txt", std::ios_base::out);
 
-  for (int seconds = minSeconds - secondsIncrement; seconds < minSeconds + secondsIncrement; seconds++) {
+  for (int seconds = minSeconds; seconds < minSeconds + secondsIncrement; seconds++) {
 
     fileout << "For seconds:" << seconds << std::endl;
 
@@ -710,11 +714,7 @@ TEST(TestRt, Day10){
     for (int y = 0; y < widthY; y++) {
       auto px = new bool[widthX];
       memset(px, 0, sizeof(bool) * widthX);
-
-      assert(px[0] == false);
       tbl[y] = px;
-      
-      assert(tbl[y][0] == false);
     }
 
     auto printline = [&fileout, widthX](bool* xline) {
@@ -731,13 +731,10 @@ TEST(TestRt, Day10){
     auto prickOff = [&tbl, minX, minY, widthX, widthY](std::shared_ptr<Point>p1) {
       const int x = p1->x - minX;
       const int y = p1->y - minY;
-      if (y >= widthY) {
-        std::cout << "now";
-      }
       assert(y < widthY);
       assert(y < tbl.size());
-      bool* xline = tbl[y];
       assert(x < widthX);
+      bool* xline = tbl[y];
       xline[x] = true;
     };
 
@@ -748,7 +745,6 @@ TEST(TestRt, Day10){
     for (int y = 0; y < widthY; y++) {
       delete[] tbl[y];
     }
-
 
     std::cout << std::endl;
     fileout << std::endl;
