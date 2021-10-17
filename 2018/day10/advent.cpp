@@ -613,7 +613,7 @@ TEST(TestRt, Day10){
   std::for_each(points.begin(), points.end(), printPoint);
 
   int minSeconds = -1;
-  int secondsIncrement = 16;
+  int secondsIncrement = 32;
   {
     double minMaximumDistanceBetweenPoints = -1;
     bool decreasing = true;
@@ -661,7 +661,7 @@ TEST(TestRt, Day10){
         std::cout << "At " << seconds << " seconds, max distance between points is " << minMaximumDistanceBetweenPoints << std::endl;
       }
 
-      secondsIncrement = (minMaximumDistanceBetweenPoints < 4000) ? 1 : secondsIncrement;
+      secondsIncrement = (minMaximumDistanceBetweenPoints < 2000) ? 1 : (minMaximumDistanceBetweenPoints < 4000) ? 4 : secondsIncrement;
 
     }
     std::cout << minMaximumDistanceBetweenPoints << " distance at time = " << minSeconds << " seconds.";
@@ -677,6 +677,7 @@ TEST(TestRt, Day10){
   for (int seconds = minSeconds; seconds < minSeconds + secondsIncrement; seconds++) {
 
     fileout << "For seconds:" << seconds << std::endl;
+    std::cout << "For seconds:" << seconds << std::endl;
 
     auto doResetAndAdvance = [seconds](std::shared_ptr<Point>p) {
       p->Reset();
@@ -720,19 +721,17 @@ TEST(TestRt, Day10){
     auto printline = [&fileout, widthX](bool* xline) {
       for (int x = 0; x < widthX; x++) {
         const auto c = (xline[x]) ? "#" : ".";
-        //std::cout << c;
+        std::cout << c;
         fileout << c;
       }
-      //std::cout << std::endl;
+      std::cout << std::endl;
       fileout << std::endl;
     };
-    std::for_each(tbl.begin(), tbl.end(), printline);
 
     auto prickOff = [&tbl, minX, minY, widthX, widthY](std::shared_ptr<Point>p1) {
       const int x = p1->x - minX;
       const int y = p1->y - minY;
       assert(y < widthY);
-      assert(y < tbl.size());
       assert(x < widthX);
       bool* xline = tbl[y];
       xline[x] = true;
