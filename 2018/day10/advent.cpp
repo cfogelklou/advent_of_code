@@ -629,6 +629,11 @@ TEST(TestRt, Day10){
 
   // Now output the message.
 
+  std::cout << endl;
+
+
+
+
 }
 
 
