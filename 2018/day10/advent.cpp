@@ -613,7 +613,7 @@ TEST(TestRt, Day10){
   std::for_each(points.begin(), points.end(), printPoint);
 
   int minSeconds = -1;
-  const int secondsIncrement = 32;
+  const int secondsIncrement = 8;
   {
     double minMaximumDistanceBetweenPoints = -1;
     bool decreasing = true;
@@ -670,13 +670,15 @@ TEST(TestRt, Day10){
 
   std::fstream fileout("advent_2018_day_10.txt", std::ios_base::out);
 
-  auto doResetAndAdvance = [minSeconds](std::shared_ptr<Point>p) {
-    p->Reset();
-    p->Advance(minSeconds);
-  };
-  std::for_each(points.begin(), points.end(), doResetAndAdvance);
+  for (int seconds = minSeconds - secondsIncrement; seconds < minSeconds + secondsIncrement; seconds++) {
 
-  for (int seconds = minSeconds; seconds < minSeconds + secondsIncrement; seconds++) {
+    fileout << "For seconds:" << seconds << std::endl;
+
+    auto doResetAndAdvance = [seconds](std::shared_ptr<Point>p) {
+      p->Reset();
+      p->Advance(seconds);
+    };
+    std::for_each(points.begin(), points.end(), doResetAndAdvance);
 
     int minX = 1000000;
     int maxX = -1;
@@ -701,17 +703,37 @@ TEST(TestRt, Day10){
     std::for_each(points.begin(), points.end(), getMaxDim);
 
 
-    const int widthX = maxX - minX;
-    const int widthY = maxY - minY;
+    const int widthX = maxX - minX + 1;
+    const int widthY = maxY - minY + 1;
     std::vector<bool *> tbl(widthY);
     assert(tbl.size() == widthY);
     for (int y = 0; y < widthY; y++) {
-      tbl[y] = new bool[widthX];
+      auto px = new bool[widthX];
+      memset(px, 0, sizeof(bool) * widthX);
+
+      assert(px[0] == false);
+      tbl[y] = px;
+      
+      assert(tbl[y][0] == false);
     }
+
+    auto printline = [&fileout, widthX](bool* xline) {
+      for (int x = 0; x < widthX; x++) {
+        const auto c = (xline[x]) ? "#" : ".";
+        //std::cout << c;
+        fileout << c;
+      }
+      //std::cout << std::endl;
+      fileout << std::endl;
+    };
+    std::for_each(tbl.begin(), tbl.end(), printline);
 
     auto prickOff = [&tbl, minX, minY, widthX, widthY](std::shared_ptr<Point>p1) {
       const int x = p1->x - minX;
       const int y = p1->y - minY;
+      if (y >= widthY) {
+        std::cout << "now";
+      }
       assert(y < widthY);
       assert(y < tbl.size());
       bool* xline = tbl[y];
@@ -721,32 +743,17 @@ TEST(TestRt, Day10){
 
     std::for_each(points.begin(), points.end(), prickOff);
 
-    
-    auto printline = [&fileout, widthX](bool* xline) {
-      for (int x = 0; x < widthX; x++) {
-        const auto c = (xline[x]) ? "#" : ".";
-        std::cout << c;
-        fileout << c;
-      }
-      std::cout << std::endl;
-
-    };
     std::for_each(tbl.begin(), tbl.end(), printline);
 
-    auto doAdvance = [secondsIncrement](std::shared_ptr<Point>p) {
-      p->Advance();
-    };
-    std::for_each(points.begin(), points.end(), doAdvance);
-
-    for (int x = 0; x < widthX; x++) {
-      delete[] tbl[x];
+    for (int y = 0; y < widthY; y++) {
+      delete[] tbl[y];
     }
 
 
     std::cout << std::endl;
     fileout << std::endl;
   }
-
+  fileout.close();
 
   std::cout << std::endl;
 
