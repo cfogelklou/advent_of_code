@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(advent_2018_day_10)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 
 set(ROOT_SRC ${CMAKE_CURRENT_SOURCE_DIR}/../..)
 set(EXTERN_LIBS ${ROOT_SRC}/extern)
