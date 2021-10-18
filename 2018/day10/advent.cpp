@@ -547,18 +547,19 @@ const char day10Input[] =
 // ////////////////////////////////////////////////////////////////////////////////////////////////
 class Point {
 public:
-  Point(std::string& line) 
+  Point(std::string& line)
     : startX(0)
     , startY(0)
     , x(0)
     , y(0)
     , vx(0)
-    , vy(0)  {
+    , vy(0) {
     GetPointFromLine(line);
   }
   ~Point() {
   }
 
+  // Parse the line using hardcoded offsets
   void GetPointFromLine(std::string& line) {
     std::string xs = line.substr(10, 6);
     startX = x = std::stoi(xs);
@@ -573,22 +574,26 @@ public:
     vy              = std::stoi(vys);
   }
 
+  // Get distance from the right-hand-side point
   double GetDistanceFromPoint(const Point& rhs) {
     double disty = rhs.y - y;
     double distx = rhs.x - x;
     return sqrt(disty * disty + distx * distx);
   }
 
+  // Advance time for this point by seconds
   void Advance(const int seconds = 1) {
     x = x + vx * seconds;
     y = y + vy * seconds;
   }
 
+  // Reset the point to start.
   void Reset() {
     x = startX;
     y = startY;
   }
 
+  // Print start, end for this point.
   void Print() {
     std::cout << "startX:" << startX << ", "
               << "startY:" << startY << std::endl;
@@ -602,7 +607,6 @@ public:
   int vx;
   int vy;
 };
-// ////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 typedef std::vector<std::shared_ptr<Point>> PointsAry;
@@ -617,6 +621,44 @@ void getPointsFromString(PointsAry& points) {
   while (std::getline(iss, line)) {
     points.push_back(std::make_unique<Point>(Point(line)));
   }
+}
+
+// ////////////////////////////////////////////////////////////////////////////////////////////////
+// Get message dimensions, height and width.
+typedef struct DimensionsInfoTag {
+  int minX;
+  int maxX;
+  int minY;
+  int maxY;
+  int widthX;
+  int widthY;
+} DimensionsInfo;
+
+DimensionsInfo getMessageDimensions(PointsAry& points) {
+  DimensionsInfo d = { 0 };
+  d.minX           = 10000000;
+  d.maxX           = -1;
+  d.minY           = 10000000;
+  d.maxY           = -1;
+
+  std::for_each(points.begin(), points.end(), [ &d ](std::shared_ptr<Point> p1) {
+    if (p1->x > d.maxX) {
+      d.maxX = p1->x;
+    }
+    if (p1->y > d.maxY) {
+      d.maxY = p1->y;
+    }
+    if (p1->x < d.minX) {
+      d.minX = p1->x;
+    }
+    if (p1->y < d.minY) {
+      d.minY = p1->y;
+    }
+  });
+
+  d.widthX = d.maxX - d.minX + 1;
+  d.widthY = d.maxY - d.minY + 1;
+  return d;
 }
 
 // ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -708,45 +750,6 @@ TEST(TestRt, Day10_0) {
 
 
 
-// ////////////////////////////////////////////////////////////////////////////////////////////////
-// Get message dimensions
-typedef struct DimensionsInfoTag {
-  int minX;
-  int maxX;
-  int minY;
-  int maxY;
-  int widthX;
-  int widthY;
-} DimensionsInfo;
-
-DimensionsInfo getMessageDimensions(PointsAry &points){
-  DimensionsInfo d = {0};
-  d.minX = 10000000;
-  d.maxX = -1;
-  d.minY = 10000000;
-  d.maxY = -1;
-
-  std::for_each(
-    points.begin(), points.end(),
-    [ &d ](std::shared_ptr<Point> p1) {
-      if (p1->x > d.maxX) {
-        d.maxX = p1->x;
-      }
-      if (p1->y > d.maxY) {
-        d.maxY = p1->y;
-      }
-      if (p1->x < d.minX) {
-        d.minX = p1->x;
-      }
-      if (p1->y < d.minY) {
-        d.minY = p1->y;
-      }
-    });
-
-  d.widthX = d.maxX - d.minX + 1;
-  d.widthY = d.maxY - d.minY + 1;
-  return d;
-}
 
 
 // ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -776,8 +779,8 @@ TEST(TestRt, Day10) {
 
     // Get the message dimensions at this time.
     const DimensionsInfo d = getMessageDimensions(points);
-    
-    
+
+    // Allocate a 2D array of booleans to store pixel data for output to screen
     std::vector<bool*> tbl(d.widthY);
     EXPECT_EQ(tbl.size(), d.widthY);
     for (int y = 0; y < d.widthY; y++) {
@@ -785,16 +788,6 @@ TEST(TestRt, Day10) {
       memset(px, 0, sizeof(bool) * d.widthX);
       tbl[ y ] = px;
     }
-
-    auto printline = [ &fileout, &d ](bool* xline) {
-      for (int x = 0; x < d.widthX; x++) {
-        const auto c = (xline[ x ]) ? "#" : ".";
-        std::cout << c;
-        fileout << c;
-      }
-      std::cout << std::endl;
-      fileout << std::endl;
-    };
 
     std::for_each(points.begin(), points.end(), [ &tbl, &d ](std::shared_ptr<Point> p1) {
       const int x = p1->x - d.minX;
@@ -805,7 +798,15 @@ TEST(TestRt, Day10) {
       xline[ x ]  = true;
     });
 
-    std::for_each(tbl.begin(), tbl.end(), printline);
+    std::for_each(tbl.begin(), tbl.end(), [ &fileout, &d ](bool* xline) {
+      for (int x = 0; x < d.widthX; x++) {
+        const auto c = (xline[ x ]) ? "#" : ".";
+        std::cout << c;
+        fileout << c;
+      }
+      std::cout << std::endl;
+      fileout << std::endl;
+    });
 
     for (int y = 0; y < d.widthY; y++) {
       delete[] tbl[ y ];
