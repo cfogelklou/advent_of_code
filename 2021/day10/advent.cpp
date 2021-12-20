@@ -387,7 +387,7 @@ void analyseCorruptLines(std::string inputString, long long& incompletePts, int&
 
   numPoints = incompletePts = 0;
 
-  // Get all lines from the input file.
+  // Get all lines from the input file, push them on the stack
   std::string line;
   while (std::getline(iss, line)) {
     line = rtrim(line);
@@ -398,6 +398,7 @@ void analyseCorruptLines(std::string inputString, long long& incompletePts, int&
     int i        = 0;
     bool corrupt = false;
 
+    // Fill the stack until corruption is found
     while (i < len && !corrupt) {
       const char c = pC[ i++ ];
       if (isOpenBracket(c)) {
@@ -421,6 +422,7 @@ void analyseCorruptLines(std::string inputString, long long& incompletePts, int&
       }
     } // while
 
+    // If no corruption is found, and the stack is not empty, then it is incomplete.
     if ((!corrupt) && (!stk.empty())) {
       long long incompleteScore = 0;
       while (!stk.empty()) {
@@ -433,12 +435,10 @@ void analyseCorruptLines(std::string inputString, long long& incompletePts, int&
       }
       EXPECT_GE(incompleteScore, 0);
       incompleteScoresArr.push_back(incompleteScore);
-      std::cout << "Line incomplete with score "
-                << incompleteScore << std::endl;
     }
   }
 
-  // After processing all lines, handle all incomplete lines
+  // After processing all lines, find the midpoint
   if (incompleteScoresArr.size() > 0) {
     std::sort(
       incompleteScoresArr.begin(), incompleteScoresArr.end());
@@ -449,7 +449,7 @@ void analyseCorruptLines(std::string inputString, long long& incompletePts, int&
               << incompleteScoresArr[ midPoint ] << std::endl;
     incompletePts = incompleteScoresArr[ midPoint ];
   }
-  incompleteScoresArr.clear();
+  
 }
 
 // ////////////////////////////////////////////////////////////////////////////////////////////////
