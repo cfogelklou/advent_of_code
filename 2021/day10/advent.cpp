@@ -449,7 +449,6 @@ void analyseCorruptLines(std::string inputString, long long& incompletePts, int&
               << incompleteScoresArr[ midPoint ] << std::endl;
     incompletePts = incompleteScoresArr[ midPoint ];
   }
-  
 }
 
 // ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -467,16 +466,13 @@ TEST(TestRt, Day10) {
   long long incompletePts = 0;
   int numPoints           = 0;
   analyseCorruptLines(day10Input, incompletePts, numPoints);
-  
+
+  // Note: This is unique for my profile and the day10Input.
   EXPECT_EQ(numPoints, 394647);
   EXPECT_EQ(incompletePts, 2380061249);
-
 }
 
 // ////////////////////////////////////////////////////////////////////////////////////////////////
-// Get message dimensions, height and width.
-
-
 int main(int argc, char** argv) {
   // The following line must be executed to initialize
   // Google Mock (and Google Test) before running the tests.
