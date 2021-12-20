@@ -381,13 +381,11 @@ static inline std::string& rtrim(std::string& s) {
 
 // ////////////////////////////////////////////////////////////////////////////////////////////////
 // Extract points from the const char string.
-void analyseCorruptLines(
-  std::string inputString, int& numCorrupt,
-  long long& incompletePts, int& numPoints) {
+void analyseCorruptLines(std::string inputString, long long& incompletePts, int& numPoints) {
   std::istringstream iss(inputString);
   std::vector<long long> incompleteScoresArr;
 
-  numCorrupt = numPoints = incompletePts = 0;
+  numPoints = incompletePts = 0;
 
   // Get all lines from the input file.
   std::string line;
@@ -422,9 +420,8 @@ void analyseCorruptLines(
         }
       }
     } // while
-    if (corrupt) {
-      numCorrupt++;
-    } else if (!stk.empty()) {
+
+    if ((!corrupt) && (!stk.empty())) {
       long long incompleteScore = 0;
       while (!stk.empty()) {
         const char openBracket = stk.top();
@@ -439,9 +436,9 @@ void analyseCorruptLines(
       std::cout << "Line incomplete with score "
                 << incompleteScore << std::endl;
     }
-    std::cout << "";
-    std::cout << std::endl;
   }
+
+  // After processing all lines, handle all incomplete lines
   if (incompleteScoresArr.size() > 0) {
     std::sort(
       incompleteScoresArr.begin(), incompleteScoresArr.end());
@@ -455,25 +452,25 @@ void analyseCorruptLines(
   incompleteScoresArr.clear();
 }
 
+// ////////////////////////////////////////////////////////////////////////////////////////////////
 TEST(TestRt, Example) {
-  int numCorrupt          = 0;
   long long incompletePts = 0;
   int numPoints           = 0;
-  analyseCorruptLines(exampleInput, numCorrupt, incompletePts, numPoints);
+  analyseCorruptLines(exampleInput, incompletePts, numPoints);
 
   EXPECT_EQ(numPoints, 26397);
   EXPECT_EQ(incompletePts, 288957);
 }
 
+// ////////////////////////////////////////////////////////////////////////////////////////////////
 TEST(TestRt, Day10) {
-  int numCorrupt          = 0;
   long long incompletePts = 0;
   int numPoints           = 0;
-  analyseCorruptLines(day10Input, numCorrupt, incompletePts, numPoints);
+  analyseCorruptLines(day10Input, incompletePts, numPoints);
+  
+  EXPECT_EQ(numPoints, 394647);
+  EXPECT_EQ(incompletePts, 2380061249);
 
-  std::cout << "Numpoints for try 2 is " << numPoints << std::endl;
-  std::cout << "numIncomplete for try 2 is "
-            << incompletePts << std::endl;
 }
 
 // ////////////////////////////////////////////////////////////////////////////////////////////////
