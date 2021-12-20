@@ -1,0 +1,35 @@
+{
+    "configurations": [
+      {
+        "name": "Linux",
+        "includePath": [
+          "${workspaceFolder}/../../extern/googletest/googletest/include",
+          "${workspaceFolder}/../../extern/googletest/googlemock/include"
+        ],
+        "defines": ["USE_SINELUT=1", "DATUNER_STROBE_ENABLED", "UT_ENABLED=1"],
+        "compilerPath": "/usr/bin/gcc",
+        "cStandard": "c11",
+        "cppStandard": "c++14",
+        "intelliSenseMode": "linux-gcc-x64",
+        "configurationProvider": "go2sh.cmake-integration"
+      },
+      {
+        "name": "Mac",
+        "includePath": [
+            "${workspaceFolder}/../../extern/googletest/googletest/include",
+            "${workspaceFolder}/../../extern/googletest/googlemock/include"
+          ],
+        "defines": ["USE_SINELUT=1", "DATUNER_STROBE_ENABLED", "UT_ENABLED=1"],
+        "macFrameworkPath": [
+          "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"
+        ],
+        "compilerPath": "/usr/bin/clang",
+        "cStandard": "c11",
+        "cppStandard": "c++14",
+        "intelliSenseMode": "macos-clang-x64",
+        "configurationProvider": "go2sh.cmake-integration"
+      }
+    ],
+    "version": 4
+  }
+  
