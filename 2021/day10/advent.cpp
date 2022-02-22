@@ -412,8 +412,8 @@ void analyseCorruptLines(std::string inputString, long long& incompletePts, int&
           if (c == closeBracket) {
             stk.pop();
           } else {
-            std::cout << "Expected " << closeBracket
-                      << " but found " << c << " instead";
+            std::cout << "Expected " << closeBracket << " but found "
+                      << c << " instead" << std::endl;
             const auto pts = getIllegalPoints(c);
             numPoints += pts;
             corrupt = true;
