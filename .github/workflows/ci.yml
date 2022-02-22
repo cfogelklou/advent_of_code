@@ -28,7 +28,6 @@ jobs:
           pushd build
           cmake ..
           make -j4
-          ctest -j4
           popd
 
       - name: Test
