@@ -33,5 +33,5 @@ jobs:
       - name: Test
         run: |
           pushd build
-          ctest -j4
+          ctest --verbose
           popd
