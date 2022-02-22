@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [master, feat/chfo/220222_cmake]
+    branches: [master]
   pull_request:
     branches: [master]
   workflow_dispatch:
@@ -19,9 +19,12 @@ jobs:
         with:
           submodules: "true"
 
-      - name: Configure CMake
+      - name: Prepare build directory
         run: |
           mkdir -p build
+
+      - name: Configure CMake
+        run: |
           pushd build
           cmake ..
           make -j4
