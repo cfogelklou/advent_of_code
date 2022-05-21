@@ -1,11 +1,11 @@
-
-
 use std::collections::VecDeque;
 
+// Returns TRUE if C is an open bracket.
 fn is_open_bracket(c:char)->bool {
     return c == '[' || c == '{' || c == '<' || c == '(';
 }
 
+// For part 1, returns the score for a found close bracket.
 fn score_for_close_bracket(c:char)->i64 {
     return match c {
         ')' => 3,
@@ -16,6 +16,7 @@ fn score_for_close_bracket(c:char)->i64 {
     };
 }
 
+// Gets the close bracket for a given open bracket.
 fn matching_close_bracket(c:char)->char {
     return match c {
         '(' => ')',
@@ -26,6 +27,7 @@ fn matching_close_bracket(c:char)->char {
     };
 }
 
+// For part 2, gets the score for a given close bracket.
 fn score_for_close_bracket_2(c:char)->i64 {
     return match c {
         ')' => 1,
@@ -36,13 +38,18 @@ fn score_for_close_bracket_2(c:char)->i64 {
     };
 }
 
+// Checks the line for corruption or incomplete.
+// If corrupt, returns the corruption score.
+// If incomplete, retuns 0 - the completion score (negative!)
 fn check_line(s:String)->i64{
     //println!("{}", s);
     let mut stack:VecDeque<char> = VecDeque::new();
     let mut score = 0;
     let mut i = 0;
+    // Todo: Figure out better way to do this in rust. I don't like i++ at the end
     while i < s.len() && score == 0 {
         let c:char = s.chars().nth(i).unwrap();
+        i = i+1;
         if is_open_bracket(c){
             stack.push_back(c);
         }
@@ -69,16 +76,18 @@ fn check_line(s:String)->i64{
                 }
             }
         }
-        i = i+1;
     }
+
     if score != 0 {
+        // There was corruption, return immediately.
         return score;
     }
     else {
+        // Either the line is incomplete or OK.
         if stack.is_empty() { 
+            // Line is complete.
             return 0; 
         } else { 
-
             // Line is incomplete. Complete it.
             score = 0;
             let mut completion:String = String::new();
@@ -89,16 +98,18 @@ fn check_line(s:String)->i64{
                 score = score * 5 + score_for_close_bracket_2(c);
                 stack.pop_back();
             }
-            println!("{} - Complete by adding {}. score = {}", s, completion, 0 - score);
+            println!("{} - Complete by adding {}.", s, completion);
             return 0 - score; 
         };
     }
 }
 
+// Checks a vector of strings for their scores.
 fn check_score(v:Vec<String>)->(i64, i64){    
     let mut incomplete_scores:Vec<i64> = Vec::new();
     let mut incomplete_score:i64 = 0;
     let mut score:i64 = 0;
+    // Iterate through all lines, update scores, and gather incomplete lines.
     for i in 0..v.len(){
         let s0 = check_line(v[i].to_string());
         let s = if s0 < 0 { 0 } else { s0 };
@@ -107,7 +118,8 @@ fn check_score(v:Vec<String>)->(i64, i64){
         }
         score = score + s;
     }
-    println!("check_score::Total score is {}", score);
+
+    // Part 2: Gets the "middle" incomplete score.
     if !incomplete_scores.is_empty(){
         incomplete_scores.sort();
         incomplete_score = incomplete_scores[incomplete_scores.len()/2];
@@ -116,6 +128,7 @@ fn check_score(v:Vec<String>)->(i64, i64){
     return (score, incomplete_score);
 }
 
+// The test case given the samples from AoC.
 fn test_example_1() {
     let v:Vec<String> = vec![
         "[({(<(())[]>[[{[]{<()<>>".to_string(),
@@ -131,9 +144,10 @@ fn test_example_1() {
     ];
 
     let (s, i) = check_score(v.clone());
+    println!("test_example_1::Total score is {}", s);
+    println!("test_example_1::Incomplete score is {}", i);
     assert_eq!(s, 26397);
     assert_eq!(i, 288957);
-
 }
 
 
