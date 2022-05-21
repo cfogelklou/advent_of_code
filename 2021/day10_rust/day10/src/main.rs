@@ -7,7 +7,7 @@ fn is_open_bracket(c:char)->bool {
 }
 
 fn check_line(s:String){
-    println!("is: {}", s);
+    //println!("is: {}", s);
     let mut stack:VecDeque<char> = VecDeque::new();
     for i in 0..s.len(){
         let c:char = s.chars().nth(i).unwrap();
@@ -19,9 +19,16 @@ fn check_line(s:String){
                 println!("Stack is empty, cannot pop")
             }
             else {
-                let e:Option<&char> = stack.back();
-                
-                println!("e: {}", e.unwrap());
+                let oe:Option<&char> = stack.back();                
+                if oe != None {
+                    let pe:&char = oe.unwrap();
+                    let e:char = *pe;
+                    if e == '('{
+                        println!("Brace brace")
+                    }
+                    
+                }
+                stack.pop_back();
             }
         }
 
@@ -32,15 +39,15 @@ fn main() {
     println!("Hello, world!");
     let v = vec![
         "[({(<(())[]>[[{[]{<()<>>",
-            "[(()[<>])]({[<{<<[]>>(",
-            "{([(<{}[<>[]}>{[]{[(<()>",
-            "(((({<>}<{<{<>}{[]{[]{}",
-            "[[<[([]))<([[{}[[()]]]",
-            "[{[{({}]{}}([{[{{{}}([]",
-            "{<[[]]>}<{[{[{[]{()[[[]",
-            "[<(<(<(<{}))><([]([]()",
-            "<{([([[(<>()){}]>(<<{{",
-            "<{([{{}}[<[[[<>{}]]]>[]]"
+        "[(()[<>])]({[<{<<[]>>(",
+        "{([(<{}[<>[]}>{[]{[(<()>",
+        "(((({<>}<{<{<>}{[]{[]{}",
+        "[[<[([]))<([[{}[[()]]]",
+        "[{[{({}]{}}([{[{{{}}([]",
+        "{<[[]]>}<{[{[{[]{()[[[]",
+        "[<(<(<(<{}))><([]([]()",
+        "<{([([[(<>()){}]>(<<{{",
+        "<{([{{}}[<[[[<>{}]]]>[]]"
     ];
     //vec.for_each(s:String)
     for i in 0..v.len(){
