@@ -16,6 +16,16 @@ fn matching_open_bracket(c:char)->char {
     };
 }
 
+fn score_for_close_bracket(c:char)->i64 {
+    return match c {
+        ')' => 3,
+        ']' => 57,
+        '}' => 1197,
+        '>' => 25137,
+        _ => 0,
+    };
+}
+
 fn matching_close_bracket(c:char)->char {
     return match c {
         '(' => ')',
@@ -65,13 +75,7 @@ fn check_line(s:String)->i64{
                     stack.pop_back();
                 }
                 else {
-                    score = match oe {
-                        Some(&'(') => 3,
-                        Some(&'[') => 57,
-                        Some(&'{') => 1197,
-                        Some(&'<') => 25137,
-                        _ => score
-                    };
+                    score = score_for_close_bracket(c);
                     println!("score = {}", score);
                 }
             }
@@ -85,6 +89,17 @@ fn check_line(s:String)->i64{
 
         return if stack.is_empty() { 0 } else { -1 };
     }
+}
+
+fn check_score(v:Vec<&str>)->i64{    
+    let mut score:i64 = 0;
+    for i in 0..v.len(){
+        let mut s = check_line(v[i].to_string());
+        s = if s < 0 { 0 } else { s };
+        score = score + s;
+    }
+    println!("check_score::Total score is {}", score);
+    return score;
 }
 
 fn main() {
@@ -101,10 +116,9 @@ fn main() {
         "<{([([[(<>()){}]>(<<{{",
         "<{([{{}}[<[[[<>{}]]]>[]]"
     ];
-    //vec.for_each(s:String)
-    for i in 0..v.len(){
-        check_line(v[i].to_string());
-    }
+
+    check_score(v);
+    
 }
 
 
@@ -124,6 +138,26 @@ mod tests {
     fn test_add() {
         assert_eq!(add(1, 2), 3);
     }
+
+    #[test]
+    fn test_example_1() {
+        let v = vec![
+            "[({(<(())[]>[[{[]{<()<>>",
+            "[(()[<>])]({[<{<<[]>>(",
+            "{([(<{}[<>[]}>{[]{[(<()>",
+            "(((({<>}<{<{<>}{[]{[]{}",
+            "[[<[([]))<([[{}[[()]]]",
+            "[{[{({}]{}}([{[{{{}}([]",
+            "{<[[]]>}<{[{[{[]{()[[[]",
+            "[<(<(<(<{}))><([]([]()",
+            "<{([([[(<>()){}]>(<<{{",
+            "<{([{{}}[<[[[<>{}]]]>[]]"
+        ];
+    
+        let s = check_score(v);
+        assert_eq!(s, 26397);
+    }
+
 
 
 }
