@@ -26,6 +26,16 @@ fn matching_close_bracket(c:char)->char {
     };
 }
 
+fn score_for_close_bracket_2(c:char)->i64 {
+    return match c {
+        ')' => 1,
+        ']' => 2,
+        '}' => 3,
+        '>' => 4,
+        _ => 0,
+    };
+}
+
 fn check_line(s:String)->i64{
     //println!("{}", s);
     let mut stack:VecDeque<char> = VecDeque::new();
@@ -65,8 +75,21 @@ fn check_line(s:String)->i64{
         return score;
     }
     else {
-
-        return if stack.is_empty() { 0 } else { -1 };
+        if stack.is_empty() { 
+            return 0; 
+        } else { 
+            // Line is incomplete. Complete it.
+            
+            let mut completion:String = String::new();
+            while !stack.is_empty(){
+                let o:char = *stack.back().unwrap();
+                let c:char = matching_close_bracket(o);
+                completion.push(c);
+                stack.pop_back();
+            }
+            println!("{} - Complete by adding {}.", s, completion);
+            return -1; 
+        };
     }
 }
 
@@ -103,21 +126,23 @@ fn main() {
     use std::io::BufRead;
     test_example_1();
 
-    let filename = std::env::args().nth(1).expect("Expected filename");
-    let file = std::io::BufReader::new(
-        std::fs::File::open(<String as AsRef<std::path::Path>>::as_ref(
-            &filename,
-        ))
-        .unwrap(),
-    );
-    let mut v:Vec<String> = Vec::new();
-    for (y, line) in file.lines().enumerate() {
-        //println!("y = {}, line = {}", y, line.as_ref().unwrap());
-        let l:String = line.unwrap();
-        v.push(l);
-    }    
-    let s = check_score(v.clone());
-    println!("main::Total score is {}", s);
+    if false {
+        let filename = std::env::args().nth(1).expect("Expected filename");
+        let file = std::io::BufReader::new(
+            std::fs::File::open(<String as AsRef<std::path::Path>>::as_ref(
+                &filename,
+            ))
+            .unwrap(),
+        );
+        let mut v:Vec<String> = Vec::new();
+        for (_, line) in file.lines().enumerate() {
+            //println!("y = {}, line = {}", y, line.as_ref().unwrap());
+            let l:String = line.unwrap();
+            v.push(l);
+        }    
+        let s = check_score(v.clone());
+        println!("main::Total score is {}", s);
+    }
 }
 
 pub fn add(a: i32, b: i32) -> i32 {
