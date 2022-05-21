@@ -26,16 +26,6 @@ jobs:
           cargo test
           cargo run input.txt
 
-      - name: Rust & Cargo - Hello World
-        working-directory: rust_test/hello_cargo
-        run: |
-          cargo check
-          cargo build
-          cargo run
-
-          cargo build --release
-          cargo run
-
       - name: Prepare build directory
         run: |
           mkdir -p build
