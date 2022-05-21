@@ -11,16 +11,17 @@ fn check_line(s:String){
     let mut stack:VecDeque<char> = VecDeque::new();
     for i in 0..s.len(){
         let c:char = s.chars().nth(i).unwrap();
-        if (is_open_bracket(c)){
+        if is_open_bracket(c){
             stack.push_back(c);
         }
         else {
-            if (stack.len() == 0){
-                Err("Stack is empty, cannot pop")
+            if stack.is_empty(){
+                println!("Stack is empty, cannot pop")
             }
             else {
-                let e = stack.pop_back();
-                println!("e: {}", e);
+                let e:Option<&char> = stack.back();
+                
+                println!("e: {}", e.unwrap());
             }
         }
 
