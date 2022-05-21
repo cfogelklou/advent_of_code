@@ -78,30 +78,36 @@ fn check_line(s:String)->i64{
         if stack.is_empty() { 
             return 0; 
         } else { 
+
             // Line is incomplete. Complete it.
-            
+            score = 0;
             let mut completion:String = String::new();
             while !stack.is_empty(){
                 let o:char = *stack.back().unwrap();
                 let c:char = matching_close_bracket(o);
                 completion.push(c);
+                score = score * 5 + score_for_close_bracket_2(c);
                 stack.pop_back();
             }
-            println!("{} - Complete by adding {}.", s, completion);
-            return -1; 
+            println!("{} - Complete by adding {}. score = {}", s, completion, 0 - score);
+            return 0 - score; 
         };
     }
 }
 
-fn check_score(v:Vec<String>)->i64{    
+fn check_score(v:Vec<String>)->(i64, Vec<i64>){    
+    let mut incomplete_scores:Vec<i64> = Vec::new();
     let mut score:i64 = 0;
     for i in 0..v.len(){
-        let mut s = check_line(v[i].to_string());
-        s = if s < 0 { 0 } else { s };
+        let s0 = check_line(v[i].to_string());
+        let s = if s0 < 0 { 0 } else { s0 };
+        if s0 < 0 {
+            incomplete_scores.push(0 - s0);
+        }
         score = score + s;
     }
     println!("check_score::Total score is {}", score);
-    return score;
+    return (score, incomplete_scores);
 }
 
 fn test_example_1() {
@@ -118,9 +124,11 @@ fn test_example_1() {
         "<{([{{}}[<[[[<>{}]]]>[]]".to_string()
     ];
 
-    let s = check_score(v.clone());
+    let (s,_) = check_score(v.clone());
     assert_eq!(s, 26397);
 }
+
+
 
 fn main() {
     use std::io::BufRead;
@@ -140,7 +148,7 @@ fn main() {
             let l:String = line.unwrap();
             v.push(l);
         }    
-        let s = check_score(v.clone());
+        let (s,_) = check_score(v.clone());
         println!("main::Total score is {}", s);
     }
 }
