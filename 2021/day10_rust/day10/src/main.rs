@@ -70,7 +70,7 @@ fn check_line(s:String)->i64{
     }
 }
 
-fn check_score(v:Vec<&str>)->i64{    
+fn check_score(v:Vec<String>)->i64{    
     let mut score:i64 = 0;
     for i in 0..v.len(){
         let mut s = check_line(v[i].to_string());
@@ -82,20 +82,20 @@ fn check_score(v:Vec<&str>)->i64{
 }
 
 fn test_example_1() {
-    let v = vec![
-        "[({(<(())[]>[[{[]{<()<>>",
-        "[(()[<>])]({[<{<<[]>>(",
-        "{([(<{}[<>[]}>{[]{[(<()>",
-        "(((({<>}<{<{<>}{[]{[]{}",
-        "[[<[([]))<([[{}[[()]]]",
-        "[{[{({}]{}}([{[{{{}}([]",
-        "{<[[]]>}<{[{[{[]{()[[[]",
-        "[<(<(<(<{}))><([]([]()",
-        "<{([([[(<>()){}]>(<<{{",
-        "<{([{{}}[<[[[<>{}]]]>[]]"
+    let v:Vec<String> = vec![
+        "[({(<(())[]>[[{[]{<()<>>".to_string(),
+        "[(()[<>])]({[<{<<[]>>(".to_string(),
+        "{([(<{}[<>[]}>{[]{[(<()>".to_string(),
+        "(((({<>}<{<{<>}{[]{[]{}".to_string(),
+        "[[<[([]))<([[{}[[()]]]".to_string(),
+        "[{[{({}]{}}([{[{{{}}([]".to_string(),
+        "{<[[]]>}<{[{[{[]{()[[[]".to_string(),
+        "[<(<(<(<{}))><([]([]()".to_string(),
+        "<{([([[(<>()){}]>(<<{{".to_string(),
+        "<{([{{}}[<[[[<>{}]]]>[]]".to_string()
     ];
 
-    let s = check_score(v);
+    let s = check_score(v.clone());
     assert_eq!(s, 26397);
 }
 
@@ -110,13 +110,14 @@ fn main() {
         ))
         .unwrap(),
     );
+    let mut v:Vec<String> = Vec::new();
     for (y, line) in file.lines().enumerate() {
-        println!("y = {}, line = {}", y, line.as_ref().unwrap());
-        for (x, c) in line.unwrap().chars().enumerate() {
-            //grid[(x, y)] = c.to_digit(10).unwrap_or(u8::MAX as u32) as u8;
-            //println!("x = {}, c = {}", x, c);
-        }
+        //println!("y = {}, line = {}", y, line.as_ref().unwrap());
+        let l:String = line.unwrap();
+        v.push(l);
     }    
+    let s = check_score(v.clone());
+    println!("main::Total score is {}", s);
 }
 
 pub fn add(a: i32, b: i32) -> i32 {
