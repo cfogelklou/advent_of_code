@@ -42,7 +42,7 @@ fn score_for_close_bracket_2(c:char)->i64 {
 // If corrupt, returns the corruption score.
 // If incomplete, retuns 0 - the completion score (negative!)
 fn check_line(s:String)->i64{
-    //println!("{}", s);
+
     let mut stack:VecDeque<char> = VecDeque::new();
     let mut score = 0;
     let mut i = 0;
@@ -154,6 +154,8 @@ fn test_example_1() {
 
 fn main() {
     use std::io::BufRead;
+
+    // Run unit test first
     test_example_1();
 
     if true {
@@ -176,19 +178,11 @@ fn main() {
     }
 }
 
-pub fn add(a: i32, b: i32) -> i32 {
-    a + b
-}
 
 #[cfg(test)]
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;
-
-    #[test]
-    fn test_add() {
-        assert_eq!(add(1, 2), 3);
-    }
 
     #[test]
     fn t1() {
