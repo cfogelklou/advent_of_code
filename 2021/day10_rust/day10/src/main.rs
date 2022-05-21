@@ -6,16 +6,6 @@ fn is_open_bracket(c:char)->bool {
     return c == '[' || c == '{' || c == '<' || c == '(';
 }
 
-fn matching_open_bracket(c:char)->char {
-    return match c {
-        ')' => '(',
-        '}' => '{',
-        ']' => '[',
-        '>' => '<',
-        _ => ' ',
-    };
-}
-
 fn score_for_close_bracket(c:char)->i64 {
     return match c {
         ')' => 3,
@@ -60,23 +50,12 @@ fn check_line(s:String)->i64{
                     _ => false
                 };
                 
-                if !isok{
-                    println!("{} - Expected {} but found {} instead.", s, matching_close_bracket(*oe.unwrap()), c);
-                }
-
-                //if oe != None {
-                //    let pe:&char = oe.unwrap();
-                //    let e:char = *pe;
-                //    if e == '('{
-                //        println!("Brace brace")
-                //    }                    
-                //}
                 if isok {
                     stack.pop_back();
                 }
                 else {
+                    println!("{} - Expected {} but found {} instead.", s, matching_close_bracket(*oe.unwrap()), c);
                     score = score_for_close_bracket(c);
-                    println!("score = {}", score);
                 }
             }
         }
@@ -102,8 +81,7 @@ fn check_score(v:Vec<&str>)->i64{
     return score;
 }
 
-fn main() {
-    println!("Hello, world!");
+fn test_example_1() {
     let v = vec![
         "[({(<(())[]>[[{[]{<()<>>",
         "[(()[<>])]({[<{<<[]>>(",
@@ -117,17 +95,33 @@ fn main() {
         "<{([{{}}[<[[[<>{}]]]>[]]"
     ];
 
-    check_score(v);
-    
+    let s = check_score(v);
+    assert_eq!(s, 26397);
 }
 
+fn main() {
+    use std::io::BufRead;
+    test_example_1();
 
+    let filename = std::env::args().nth(1).expect("Expected filename");
+    let file = std::io::BufReader::new(
+        std::fs::File::open(<String as AsRef<std::path::Path>>::as_ref(
+            &filename,
+        ))
+        .unwrap(),
+    );
+    for (y, line) in file.lines().enumerate() {
+        println!("y = {}, line = {}", y, line.as_ref().unwrap());
+        for (x, c) in line.unwrap().chars().enumerate() {
+            //grid[(x, y)] = c.to_digit(10).unwrap_or(u8::MAX as u32) as u8;
+            //println!("x = {}, c = {}", x, c);
+        }
+    }    
+}
 
 pub fn add(a: i32, b: i32) -> i32 {
     a + b
 }
-
-
 
 #[cfg(test)]
 mod tests {
@@ -140,24 +134,8 @@ mod tests {
     }
 
     #[test]
-    fn test_example_1() {
-        let v = vec![
-            "[({(<(())[]>[[{[]{<()<>>",
-            "[(()[<>])]({[<{<<[]>>(",
-            "{([(<{}[<>[]}>{[]{[(<()>",
-            "(((({<>}<{<{<>}{[]{[]{}",
-            "[[<[([]))<([[{}[[()]]]",
-            "[{[{({}]{}}([{[{{{}}([]",
-            "{<[[]]>}<{[{[{[]{()[[[]",
-            "[<(<(<(<{}))><([]([]()",
-            "<{([([[(<>()){}]>(<<{{",
-            "<{([{{}}[<[[[<>{}]]]>[]]"
-        ];
-    
-        let s = check_score(v);
-        assert_eq!(s, 26397);
+    fn t1() {
+        test_example_1();
     }
-
-
 
 }
