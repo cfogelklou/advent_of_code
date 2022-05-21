@@ -95,8 +95,9 @@ fn check_line(s:String)->i64{
     }
 }
 
-fn check_score(v:Vec<String>)->(i64, Vec<i64>){    
+fn check_score(v:Vec<String>)->(i64, i64){    
     let mut incomplete_scores:Vec<i64> = Vec::new();
+    let mut incomplete_score:i64 = 0;
     let mut score:i64 = 0;
     for i in 0..v.len(){
         let s0 = check_line(v[i].to_string());
@@ -107,7 +108,12 @@ fn check_score(v:Vec<String>)->(i64, Vec<i64>){
         score = score + s;
     }
     println!("check_score::Total score is {}", score);
-    return (score, incomplete_scores);
+    if !incomplete_scores.is_empty(){
+        incomplete_scores.sort();
+        incomplete_score = incomplete_scores[incomplete_scores.len()/2];
+    }
+    
+    return (score, incomplete_score);
 }
 
 fn test_example_1() {
@@ -124,8 +130,10 @@ fn test_example_1() {
         "<{([{{}}[<[[[<>{}]]]>[]]".to_string()
     ];
 
-    let (s,_) = check_score(v.clone());
+    let (s, i) = check_score(v.clone());
     assert_eq!(s, 26397);
+    assert_eq!(i, 288957);
+
 }
 
 
@@ -134,7 +142,7 @@ fn main() {
     use std::io::BufRead;
     test_example_1();
 
-    if false {
+    if true {
         let filename = std::env::args().nth(1).expect("Expected filename");
         let file = std::io::BufReader::new(
             std::fs::File::open(<String as AsRef<std::path::Path>>::as_ref(
@@ -148,8 +156,9 @@ fn main() {
             let l:String = line.unwrap();
             v.push(l);
         }    
-        let (s,_) = check_score(v.clone());
+        let (s,incomplete_score) = check_score(v.clone());
         println!("main::Total score is {}", s);
+        println!("main::Incomplete score is {}", incomplete_score);
     }
 }
 
