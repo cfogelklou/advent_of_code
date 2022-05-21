@@ -1,5 +1,31 @@
 
 
+use std::collections::VecDeque;
+
+fn is_open_bracket(c:char)->bool {
+    return c == '[' || c == '{' || c == '<' || c == '(';
+}
+
+fn check_line(s:String){
+    println!("is: {}", s);
+    let mut stack:VecDeque<char> = VecDeque::new();
+    for i in 0..s.len(){
+        let c:char = s.chars().nth(i).unwrap();
+        if (is_open_bracket(c)){
+            stack.push_back(c);
+        }
+        else {
+            if (stack.len() == 0){
+                Err("Stack is empty, cannot pop")
+            }
+            else {
+                let e = stack.pop_back();
+                println!("e: {}", e);
+            }
+        }
+
+    }
+}
 
 fn main() {
     println!("Hello, world!");
@@ -17,7 +43,7 @@ fn main() {
     ];
     //vec.for_each(s:String)
     for i in 0..v.len(){
-        println!("is: {}", v[i]);
+        check_line(v[i].to_string())
     }
 }
 
