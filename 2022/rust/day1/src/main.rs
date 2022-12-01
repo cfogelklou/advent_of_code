@@ -1,9 +1,7 @@
 
 fn snacks(v:Vec<String>)->(i64, i64){   
-    let mut elves:Vec<(i64,i64)> = Vec::new(); 
-    let mut current_elf_idx = 0;
+    let mut elves:Vec<i64> = Vec::new(); 
     let mut current_elf_sum:i64 = 0;
-    let mut richest_elf_idx = -1;
     let mut richest_elf_sum = -1;
 
     for i in 0..v.len() {
@@ -19,17 +17,21 @@ fn snacks(v:Vec<String>)->(i64, i64){
             if current_elf_sum != 0 {
                 if current_elf_sum > richest_elf_sum {
                     richest_elf_sum = current_elf_sum;
-                    richest_elf_idx = current_elf_idx;
                 }
-                let tup = (current_elf_idx, current_elf_sum);
-                elves.push(tup);
-                current_elf_idx += 1;
+                elves.push(current_elf_sum);
             }
             current_elf_sum = 0;
         }
     }
+    elves.sort();
+    elves.reverse();
+    let mut top_three_sum:i64 = 0;
+    for i in 0..3 {
+        println!("Checking elf {}", i);
+        top_three_sum += elves[i];
+    }
     
-    return (richest_elf_idx + 1, richest_elf_sum);
+    return (top_three_sum, richest_elf_sum);
 }
 
 
@@ -51,7 +53,7 @@ fn main() {
             v.push(l);
         }    
         let (s, i) = snacks(v.clone());
-        println!("The elf with the most calories is {}", s);
+        println!("The top three elves carry {}", s);
         println!("The elf's total calories are {}", i);
     }
 }
@@ -79,9 +81,9 @@ fn test_example_1() {
     ];
 
     let (s, i) = snacks(v.clone());
-    println!("The elf with the most calories is {}", s);
+    println!("The top three elves have {}", s);
     println!("The elf's total calories are {}", i);
-    assert_eq!(s, 4);
+    assert_eq!(s, 45000);
     assert_eq!(i, 24000);
 }
 
