@@ -15,7 +15,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repo
+        uses: actions/checkout@v2
         with:
           submodules: "true"
 
@@ -30,18 +31,18 @@ jobs:
         working-directory: 2022/rust/day1
         run: cargo check && cargo test && cargo run input.txt
 
-      - name: Prepare build directory
+      - name: Prepare build directory (AoC C++)
         run: |
           mkdir -p build
 
-      - name: Configure CMake
+      - name: Configure CMake (AoC C++)
         run: |
           pushd build
           cmake ..
           make -j4
           popd
 
-      - name: Test
+      - name: Test (AoC C++)
         run: |
           pushd build
           ctest --verbose
