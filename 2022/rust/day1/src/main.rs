@@ -1,5 +1,6 @@
 
-fn snacks(v:Vec<String>)->(i64, i64){    
+fn snacks(v:Vec<String>)->(i64, i64){   
+    let mut elves:Vec<(i64,i64)> = Vec::new(); 
     let mut current_elf_idx = 0;
     let mut current_elf_sum:i64 = 0;
     let mut richest_elf_idx = -1;
@@ -20,6 +21,8 @@ fn snacks(v:Vec<String>)->(i64, i64){
                     richest_elf_sum = current_elf_sum;
                     richest_elf_idx = current_elf_idx;
                 }
+                let tup = (current_elf_idx, current_elf_sum);
+                elves.push(tup);
                 current_elf_idx += 1;
             }
             current_elf_sum = 0;
