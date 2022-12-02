@@ -2,7 +2,6 @@
 fn snacks(v:Vec<String>)->(i64, i64){   
     let mut elves:Vec<i64> = Vec::new(); 
     let mut current_elf_sum:i64 = 0;
-    let mut richest_elf_sum = -1;
 
     for i in 0..v.len() {
         let next_line = v[i].to_string();
@@ -15,9 +14,6 @@ fn snacks(v:Vec<String>)->(i64, i64){
         if this_snack == 0 {
             // New elf
             if current_elf_sum != 0 {
-                if current_elf_sum > richest_elf_sum {
-                    richest_elf_sum = current_elf_sum;
-                }
                 elves.push(current_elf_sum);
             }
             current_elf_sum = 0;
@@ -31,9 +27,8 @@ fn snacks(v:Vec<String>)->(i64, i64){
         top_three_sum += elves[i];
     }
     
-    return (top_three_sum, richest_elf_sum);
+    return (top_three_sum, elves[0]);
 }
-
 
 fn main() {
     use std::io::BufRead;
@@ -57,7 +52,6 @@ fn main() {
         println!("The elf's total calories are {}", i);
     }
 }
-
 
 // The test case given the samples from AoC.
 #[allow(dead_code)]
@@ -86,6 +80,36 @@ fn test_example_1() {
     assert_eq!(s, 45000);
     assert_eq!(i, 24000);
 }
+
+
+// The test case given the samples from AoC.
+#[allow(dead_code)]
+fn test_2() {
+    let v:Vec<String> = vec![
+        "1000".to_string(),
+        "2000".to_string(),
+        "3000".to_string(),
+        "".to_string(),
+        "4000".to_string(),
+        "".to_string(),
+        "5000".to_string(),
+        "6000".to_string(),
+        "".to_string(),
+        "7000".to_string(),
+        "8000".to_string(),
+        "9000".to_string(),
+        "".to_string(),
+        "10000".to_string(),
+        "".to_string()
+    ];
+
+    let (s, i) = snacks(v.clone());
+    println!("The top three elves have {}", s);
+    println!("The elf's total calories are {}", i);
+    assert_eq!(s, 45000);
+    assert_eq!(i, 24000);
+}
+
 
 #[cfg(test)]
 mod tests {
