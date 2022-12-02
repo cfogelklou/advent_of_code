@@ -1,40 +1,72 @@
 
 use std::io::{self, BufReader};
 
-fn snacks(v:Vec<String>)->(i64, i64){   
-    let mut elves:Vec<i64> = Vec::new(); 
-    let mut current_elf_sum:i64 = 0;
+#[derive(Clone, Copy)]
+enum RockPaperScissors {
+    Rock = 0,
+    Paper = 1,
+    Scissors = 2
+}
 
-    // A lesson in mutating variables.
-    fn create_new_elf_if_nonzero_sum(sum:&mut i64, elves:&mut Vec<i64>){
-        if *sum != 0 {
-            elves.push(*sum);
-        }
-        *sum = 0;
+#[derive(Clone, Copy)]
+enum MatchResult {
+    YouWin = 0,
+    Draw = 3,
+    IWin = 6
+}
+
+#[allow(dead_code)]
+fn get_move(c:char)->RockPaperScissors {
+    return match c {
+        'A' => RockPaperScissors::Rock,
+        'B' => RockPaperScissors::Paper,
+        'X' => RockPaperScissors::Rock,
+        'Y' => RockPaperScissors::Paper,
+        _ => RockPaperScissors::Scissors,
+    };
+}
+
+#[allow(dead_code)]
+fn do_i_win(me:RockPaperScissors, you:RockPaperScissors) ->MatchResult {
+    let ime:i32 = me as i32;
+    let iyou:i32 = you as i32;
+    let result = ime - iyou;
+    let m:MatchResult;
+    if result == 0 {
+        m = MatchResult::Draw;
     }
+    else if result == -2 {
+        m = MatchResult::IWin;
+    }
+    else if result == 2 {
+        m = MatchResult::YouWin;
+    }
+    else {
+        m = if result < 0 { MatchResult::YouWin } else { MatchResult::IWin }
+    }
+    return m;
+}
 
+#[allow(dead_code)]
+fn paper_rock_scissors(v:Vec<String>)->(i64, i64){   
+    let mut total:i64 = 0;
     for next_line in v.iter() {
 
-        // Parse, and handle error elegantly
-        match next_line.trim().parse::<i64>(){
-            
-            Ok(this_snack) => {
-                // Give this elf his calories
-                current_elf_sum += this_snack;
-            },
-            Err(_) => {
-                create_new_elf_if_nonzero_sum(&mut current_elf_sum, &mut elves);
-            }
-        }        
+        let xy: Vec<&str> = next_line.trim().split_whitespace().collect();
+        let x = xy[1].chars().nth(0).unwrap();
+        let y = xy[0].chars().nth(0).unwrap();
+        let me = get_move(x);
+        let you = get_move(y);
+
+        let me_win = do_i_win(me, you);
+        let mut my_score = me_win as i32;
+        my_score +=  (me.clone() as i32) + 1;
+
+        total += my_score as i64;
     }
 
-    // After last line, check if there is still an elf processing.
-    create_new_elf_if_nonzero_sum(&mut current_elf_sum, &mut elves);
 
-    elves.sort();
-    elves.reverse();
-    let top_three_sum:i64 = elves[0..3].iter().sum();    
-    return (top_three_sum, elves[0]);
+    return (total, 0);
 }
 
 fn main()  -> io::Result<()> {
@@ -52,59 +84,20 @@ fn main()  -> io::Result<()> {
         let l:String = line.unwrap();
         v.push(l);
     }    
-    let (s, i) = snacks(v.clone());
+    let (s, i) = paper_rock_scissors(v.clone());
     println!("The top three elves carry {}", s);
     println!("The elf's total calories are {}", i);
     Ok(())
 }
 
-// The test case given the samples from AoC.
+
+
 #[allow(dead_code)]
 fn test_example_1() {
-    let v:Vec<String> = vec![
-        "1000".to_string(),
-        "2000".to_string(),
-        "3000".to_string(),
-        "".to_string(),
-        "4000".to_string(),
-        "".to_string(),
-        "5000".to_string(),
-        "6000".to_string(),
-        "".to_string(),
-        "7000".to_string(),
-        "8000".to_string(),
-        "9000".to_string(),
-        "".to_string(),
-        "10000".to_string(),
-        "".to_string()
-    ];
-
-    let (s, i) = snacks(v.clone());
-    println!("The top three elves have {}", s);
-    println!("The elf's total calories are {}", i);
-    assert_eq!(s, 45000);
-    assert_eq!(i, 24000);
-}
-
-
-#[allow(dead_code)]
-fn test_example_2() {
     use std::io::BufRead;
-    let raw_string = "
-    1000\n\
-    2000\n\
-    3000\n\
-    \n\
-    4000\n\
-    \n\
-    5000\n\
-    6000\n\
-    \n\
-    7000\n\
-    8000\n\
-    9000\n\
-    \n\
-    10000";
+    let raw_string = "A Y\n\
+                            B X\n\
+                            C Z";
 
     let b = BufReader::new(raw_string.as_bytes());
     let mut v:Vec<String> = Vec::new();
@@ -113,11 +106,10 @@ fn test_example_2() {
         v.push(l);
     }  
     
-    let (s, i) = snacks(v.clone());
-    println!("The top three elves have {}", s);
-    println!("The elf's total calories are {}", i);
-    assert_eq!(s, 45000);
-    assert_eq!(i, 24000);
+    let (s, i) = paper_rock_scissors(v.clone());
+    println!("Your score {}", s);
+    assert_eq!(s, 15);
+    assert_eq!(i, 0);
 }
 
 
@@ -128,12 +120,20 @@ mod tests {
 
     #[test]
     fn t1() {
-        test_example_1();
+        assert_eq!( MatchResult::Draw as i32, do_i_win( RockPaperScissors::Paper, RockPaperScissors::Paper) as i32);
+        assert_eq!( MatchResult::Draw as i32, do_i_win( RockPaperScissors::Rock, RockPaperScissors::Rock) as i32);
+        assert_eq!( MatchResult::Draw as i32, do_i_win( RockPaperScissors::Scissors, RockPaperScissors::Scissors) as i32);
+        assert_eq!( MatchResult::IWin as i32, do_i_win( RockPaperScissors::Scissors, RockPaperScissors::Paper) as i32);
+        assert_eq!( MatchResult::IWin as i32, do_i_win( RockPaperScissors::Rock, RockPaperScissors::Scissors) as i32);
+        assert_eq!( MatchResult::IWin as i32, do_i_win( RockPaperScissors::Paper, RockPaperScissors::Rock) as i32);
+        assert_eq!( MatchResult::YouWin as i32, do_i_win( RockPaperScissors::Scissors, RockPaperScissors::Rock) as i32);
+        assert_eq!( MatchResult::YouWin as i32, do_i_win( RockPaperScissors::Rock, RockPaperScissors::Paper) as i32);
+        assert_eq!( MatchResult::YouWin as i32, do_i_win( RockPaperScissors::Paper, RockPaperScissors::Scissors) as i32);
     }
 
     #[test]
     fn t2() {
-        test_example_2();
+        test_example_1();
     }
 
 }
