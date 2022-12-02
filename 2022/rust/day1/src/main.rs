@@ -1,5 +1,5 @@
 
-use std::io;
+use std::io::{self, BufReader};
 
 fn snacks(v:Vec<String>)->(i64, i64){   
     let mut elves:Vec<i64> = Vec::new(); 
@@ -21,9 +21,14 @@ fn snacks(v:Vec<String>)->(i64, i64){
                 }
                 current_elf_sum = 0;
             }
-        }
-        
+        }        
     }
+
+    // New elf
+    if current_elf_sum != 0 {
+        elves.push(current_elf_sum);
+    }
+
     elves.sort();
     elves.reverse();
     let top_three_sum:i64 = elves[0..3].iter().sum();    
@@ -80,6 +85,40 @@ fn test_example_1() {
 }
 
 
+#[allow(dead_code)]
+fn test_example_2() {
+    use std::io::BufRead;
+    let raw_string = "
+    1000\n\
+    2000\n\
+    3000\n\
+    \n\
+    4000\n\
+    \n\
+    5000\n\
+    6000\n\
+    \n\
+    7000\n\
+    8000\n\
+    9000\n\
+    \n\
+    10000";
+
+    let b = BufReader::new(raw_string.as_bytes());
+    let mut v:Vec<String> = Vec::new();
+    for (_, line) in b.lines().enumerate() {    
+        let l:String = line.unwrap().trim().to_string();
+        v.push(l);
+    }  
+    
+    let (s, i) = snacks(v.clone());
+    println!("The top three elves have {}", s);
+    println!("The elf's total calories are {}", i);
+    assert_eq!(s, 45000);
+    assert_eq!(i, 24000);
+}
+
+
 #[cfg(test)]
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
@@ -88,6 +127,11 @@ mod tests {
     #[test]
     fn t1() {
         test_example_1();
+    }
+
+    #[test]
+    fn t2() {
+        test_example_2();
     }
 
 }
