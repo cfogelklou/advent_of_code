@@ -6,15 +6,15 @@ fn snacks(v:Vec<String>)->(i64, i64){
     let mut current_elf_sum:i64 = 0;
 
     // A lesson in mutating variables.
-    fn check_sum(sum:&mut i64, elves:&mut Vec<i64>){
+    fn create_new_elf_if_nonzero_sum(sum:&mut i64, elves:&mut Vec<i64>){
         if *sum != 0 {
             elves.push(*sum);
         }
         *sum = 0;
     }
 
-    for i in 0..v.len() {
-        let next_line = v[i].to_string();
+    for next_line in v.iter() {
+
         // Parse, and handle error elegantly
         match next_line.trim().parse::<i64>(){
             
@@ -23,13 +23,13 @@ fn snacks(v:Vec<String>)->(i64, i64){
                 current_elf_sum += this_snack;
             },
             Err(_) => {
-                check_sum(&mut current_elf_sum, &mut elves);
+                create_new_elf_if_nonzero_sum(&mut current_elf_sum, &mut elves);
             }
         }        
     }
 
-    // New elf
-    check_sum(&mut current_elf_sum, &mut elves);
+    // After last line, check if there is still an elf processing.
+    create_new_elf_if_nonzero_sum(&mut current_elf_sum, &mut elves);
 
     elves.sort();
     elves.reverse();
