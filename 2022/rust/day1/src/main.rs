@@ -1,4 +1,6 @@
 
+use std::io;
+
 fn snacks(v:Vec<String>)->(i64, i64){   
     let mut elves:Vec<i64> = Vec::new(); 
     let mut current_elf_sum:i64 = 0;
@@ -7,6 +9,7 @@ fn snacks(v:Vec<String>)->(i64, i64){
         let next_line = v[i].to_string();
         // Parse, and handle error elegantly
         match next_line.trim().parse::<i64>(){
+            
             Ok(this_snack) => {
                 // Give this elf his calories
                 current_elf_sum += this_snack;
@@ -27,7 +30,7 @@ fn snacks(v:Vec<String>)->(i64, i64){
     return (top_three_sum, elves[0]);
 }
 
-fn main() {
+fn main()  -> io::Result<()> {
     use std::io::BufRead;
 
     let filename = std::env::args().nth(1).expect("Expected filename");
@@ -45,7 +48,7 @@ fn main() {
     let (s, i) = snacks(v.clone());
     println!("The top three elves carry {}", s);
     println!("The elf's total calories are {}", i);
-    
+    Ok(())
 }
 
 // The test case given the samples from AoC.
