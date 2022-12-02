@@ -5,7 +5,12 @@ fn snacks(v:Vec<String>)->(i64, i64){
 
     for i in 0..v.len() {
         let next_line = v[i].to_string();
-        let this_snack:i64 = if next_line.len() > 0 { next_line.parse::<i64>().unwrap() } else { 0 };
+        let this_snack:i64;
+        // Parse, and handle error elegantly
+        match next_line.trim().parse::<i64>(){
+            Ok(n) => this_snack = n,
+            Err(_) => this_snack = 0
+        }
         
         // Give this elf his calories
         current_elf_sum += this_snack;
