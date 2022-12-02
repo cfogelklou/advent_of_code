@@ -27,6 +27,15 @@ fn get_move(c:char)->RockPaperScissors {
 }
 
 #[allow(dead_code)]
+fn get_plan(c:char)->MatchResult {
+    return match c {
+        'X' => MatchResult::YouWin,
+        'Y' => MatchResult::Draw,
+        _ => MatchResult::IWin,
+    };
+}
+
+#[allow(dead_code)]
 fn do_i_win(me:RockPaperScissors, you:RockPaperScissors) ->MatchResult {
     let ime:i32 = me as i32;
     let iyou:i32 = you as i32;
@@ -48,7 +57,7 @@ fn do_i_win(me:RockPaperScissors, you:RockPaperScissors) ->MatchResult {
 }
 
 #[allow(dead_code)]
-fn paper_rock_scissors(v:Vec<String>)->(i64, i64){   
+fn paper_rock_scissors_1(v:Vec<String>)->(i64, i64){   
     let mut total:i64 = 0;
     for next_line in v.iter() {
 
@@ -68,6 +77,32 @@ fn paper_rock_scissors(v:Vec<String>)->(i64, i64){
     return (total, 0);
 }
 
+#[allow(dead_code)]
+fn paper_rock_scissors_2(v:Vec<String>)->(i64, i64){   
+    let mut total:i64 = 0;
+    for next_line in v.iter() {
+
+        let strategy_enc: Vec<&str> = next_line.trim().split_whitespace().collect();
+        let you_enc = strategy_enc[0].chars().nth(0).unwrap();
+        let me_enc = strategy_enc[1].chars().nth(0).unwrap();
+        let you = get_move(you_enc);
+        let my_plan = get_plan(me_enc);
+
+        let me_win = do_i_win(me, you);
+        let my_score = me_win as i32 + (me.clone() as i32) + 1;
+
+        total += my_score as i64;
+    }
+    return (total, 0);
+}
+
+fn paper_rock_scissors(v:Vec<String>)->(i64, i64){   
+    let (r1, _) = paper_rock_scissors_1(v.clone());
+    let (r2, _) = paper_rock_scissors_2(v.clone());
+    return (r1, r2);
+}
+
+
 fn main()  -> io::Result<()> {
     use std::io::BufRead;
 
@@ -84,7 +119,7 @@ fn main()  -> io::Result<()> {
         v.push(l);
     }    
     let (s, i) = paper_rock_scissors(v.clone());
-    println!("The top three elves carry {}", s);
+    println!("My score is {}", s);
     println!("The elf's total calories are {}", i);
     Ok(())
 }
