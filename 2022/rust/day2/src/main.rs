@@ -147,6 +147,8 @@ fn main()  -> io::Result<()> {
     let (s, i) = paper_rock_scissors(v.clone());
     println!("My score by misinterpreting the plan is {}", s);
     println!("My score by the real plan is {}", i);
+    //assert_eq!(s, 14375);
+    //assert_eq!(i, 10274);    
     Ok(())
 }
 
@@ -167,9 +169,10 @@ fn test_example_1() {
     }  
     
     let (s, i) = paper_rock_scissors(v.clone());
-    println!("Your score {}", s);
+    println!("My score by misinterpreting the plan is {}", s);
+    println!("My score by the real plan is {}", i);
     assert_eq!(s, 15);
-    assert_eq!(i, 0);
+    assert_eq!(i, 12);
 }
 
 
