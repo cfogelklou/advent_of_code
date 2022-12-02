@@ -23,12 +23,7 @@ fn snacks(v:Vec<String>)->(i64, i64){
     }
     elves.sort();
     elves.reverse();
-    let mut top_three_sum:i64 = 0;
-    for i in 0..3 {
-        println!("Checking elf {}", i);
-        top_three_sum += elves[i];
-    }
-    
+    let top_three_sum:i64 = elves[0..3].iter().sum();    
     return (top_three_sum, elves[0]);
 }
 
