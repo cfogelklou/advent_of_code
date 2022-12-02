@@ -5,24 +5,21 @@ fn snacks(v:Vec<String>)->(i64, i64){
 
     for i in 0..v.len() {
         let next_line = v[i].to_string();
-        let this_snack:i64;
         // Parse, and handle error elegantly
         match next_line.trim().parse::<i64>(){
-            Ok(n) => this_snack = n,
-            Err(_) => this_snack = 0
+            Ok(this_snack) => {
+                // Give this elf his calories
+                current_elf_sum += this_snack;
+            },
+            Err(_) => {
+                // New elf
+                if current_elf_sum != 0 {
+                    elves.push(current_elf_sum);
+                }
+                current_elf_sum = 0;
+            }
         }
         
-        // Give this elf his calories
-        current_elf_sum += this_snack;
-
-        // If this snack had no calories, then push the current snack onto this elf
-        if this_snack == 0 {
-            // New elf
-            if current_elf_sum != 0 {
-                elves.push(current_elf_sum);
-            }
-            current_elf_sum = 0;
-        }
     }
     elves.sort();
     elves.reverse();
