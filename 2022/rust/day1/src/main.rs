@@ -33,58 +33,27 @@ fn snacks(v:Vec<String>)->(i64, i64){
 fn main() {
     use std::io::BufRead;
 
-    if true {
-        let filename = std::env::args().nth(1).expect("Expected filename");
-        let file = std::io::BufReader::new(
-            std::fs::File::open(<String as AsRef<std::path::Path>>::as_ref(
-                &filename,
-            ))
-            .unwrap(),
-        );
-        let mut v:Vec<String> = Vec::new();
-        for (_, line) in file.lines().enumerate() {
-            //println!("y = {}, line = {}", y, line.as_ref().unwrap());
-            let l:String = line.unwrap();
-            v.push(l);
-        }    
-        let (s, i) = snacks(v.clone());
-        println!("The top three elves carry {}", s);
-        println!("The elf's total calories are {}", i);
-    }
+    let filename = std::env::args().nth(1).expect("Expected filename");
+    let file = std::io::BufReader::new(
+        std::fs::File::open(<String as AsRef<std::path::Path>>::as_ref(
+            &filename,
+        ))
+        .unwrap(),
+    );
+    let mut v:Vec<String> = Vec::new();
+    for (_, line) in file.lines().enumerate() {    
+        let l:String = line.unwrap();
+        v.push(l);
+    }    
+    let (s, i) = snacks(v.clone());
+    println!("The top three elves carry {}", s);
+    println!("The elf's total calories are {}", i);
+    
 }
 
 // The test case given the samples from AoC.
 #[allow(dead_code)]
 fn test_example_1() {
-    let v:Vec<String> = vec![
-        "1000".to_string(),
-        "2000".to_string(),
-        "3000".to_string(),
-        "".to_string(),
-        "4000".to_string(),
-        "".to_string(),
-        "5000".to_string(),
-        "6000".to_string(),
-        "".to_string(),
-        "7000".to_string(),
-        "8000".to_string(),
-        "9000".to_string(),
-        "".to_string(),
-        "10000".to_string(),
-        "".to_string()
-    ];
-
-    let (s, i) = snacks(v.clone());
-    println!("The top three elves have {}", s);
-    println!("The elf's total calories are {}", i);
-    assert_eq!(s, 45000);
-    assert_eq!(i, 24000);
-}
-
-
-// The test case given the samples from AoC.
-#[allow(dead_code)]
-fn test_2() {
     let v:Vec<String> = vec![
         "1000".to_string(),
         "2000".to_string(),
