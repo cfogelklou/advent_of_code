@@ -52,15 +52,14 @@ fn paper_rock_scissors(v:Vec<String>)->(i64, i64){
     let mut total:i64 = 0;
     for next_line in v.iter() {
 
-        let xy: Vec<&str> = next_line.trim().split_whitespace().collect();
-        let x = xy[1].chars().nth(0).unwrap();
-        let y = xy[0].chars().nth(0).unwrap();
-        let me = get_move(x);
-        let you = get_move(y);
+        let strategy_enc: Vec<&str> = next_line.trim().split_whitespace().collect();
+        let you_enc = strategy_enc[0].chars().nth(0).unwrap();
+        let me_enc = strategy_enc[1].chars().nth(0).unwrap();
+        let me = get_move(me_enc);
+        let you = get_move(you_enc);
 
         let me_win = do_i_win(me, you);
-        let mut my_score = me_win as i32;
-        my_score +=  (me.clone() as i32) + 1;
+        let my_score = me_win as i32 + (me.clone() as i32) + 1;
 
         total += my_score as i64;
     }
