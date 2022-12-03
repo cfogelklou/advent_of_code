@@ -35,10 +35,12 @@ fn rucksack_filter(v:Vec<String>)->(i64, i64){
         let compartment_items =  arr.len() / 2;
         let r = arr[compartment_items..arr.len()].to_vec(); // Righthand compartment
         // Filter items in the left hand compartment that also exist in the righthand compartment
-        let common_items:Vec<char> = arr[0..compartment_items].to_vec().into_iter().filter(|x| r.contains(x) ).collect();
+        let mut common_items:Vec<char> = arr[0..compartment_items].to_vec().into_iter().filter(|x| r.contains(x) ).collect();
         
         // Assume >=1 item
         assert_eq!(true, common_items.len() >= 1);
+        common_items.dedup();
+        assert_eq!(1, common_items.len());
 
         // Get the score
         let score = get_score_for_char(common_items[0]);
@@ -59,20 +61,18 @@ fn rucksack_filter_groups(v:Vec<String>)->(i64, i64){
         let first:Vec<char> = v[i].chars().collect();
         for j in 1..3{
             let r:Vec<char> = v[i + j].chars().collect();
-            let mut this_common:Vec<char> = Vec::new();
-            
             // Either compare the the first vector, or to the common_items from last pass
-            let cmp: &Vec<char> = if j == 1 { &first } else { &common_items };
-            cmp.iter().for_each(|x| {
-                if r.contains(x){
-                    if !this_common.contains(x) {
-                        this_common.push(*x);
-                    }
-                }
-            });
+            let cmp: &Vec<char> = if j == 1 { &first } else { &common_items };            
+
+            // Filter items that exist in both. May create duplicates.
+            let mut this_common:Vec<char> = cmp.to_vec().into_iter().filter(|x| r.contains(x) ).collect();            
+            this_common.dedup();
             common_items = this_common;
         }
+        assert_eq!(true, common_items.len() >= 1);
+        common_items.dedup();
         assert_eq!(1, common_items.len());
+
         let score = get_score_for_char(common_items[0]);
         total += score as i64;
 
