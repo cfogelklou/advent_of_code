@@ -33,8 +33,14 @@ fn rucksack_filter(v:Vec<String>)->(i64, i64){
         let arr: Vec<char> = next_line.chars().collect();
 
         let compartment_items =  arr.len() / 2;
-        let r = arr[compartment_items..arr.len()].to_vec();
-        let common_items:Vec<char> = arr[0..compartment_items].to_vec().into_iter().filter(|x| r.contains(x) ).collect();        
+        let r = arr[compartment_items..arr.len()].to_vec(); // Righthand compartment
+        // Filter items in the left hand compartment that also exist in the righthand compartment
+        let common_items:Vec<char> = arr[0..compartment_items].to_vec().into_iter().filter(|x| r.contains(x) ).collect();
+        
+        // Assume >=1 item
+        assert_eq!(true, common_items.len() >= 1);
+
+        // Get the score
         let score = get_score_for_char(common_items[0]);
         total += score as i64;
 
