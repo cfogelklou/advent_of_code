@@ -63,6 +63,8 @@ fn rucksack_filter_groups(v:Vec<String>)->(i64, i64){
         for j in 1..3{
             let r:Vec<char> = v[i + j].chars().collect();
             let mut this_common:Vec<char> = Vec::new();
+            
+            // Either compare the the first vector, or to the common_items from last pass
             let cmp: &Vec<char> = if j == 1 { &first } else { &common_items };
             cmp.iter().for_each(|x| {
                 if r.contains(x){

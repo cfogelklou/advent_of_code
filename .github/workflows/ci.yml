@@ -27,8 +27,16 @@ jobs:
           cargo test
           cargo run input.txt
 
-      - name: Rust & Cargo - AoC 2022
+      - name: Rust & Cargo - AoC 2022 day 1
         working-directory: 2022/rust/day1
+        run: cargo check && cargo test && cargo run input.txt
+
+      - name: Rust & Cargo - AoC 2022 day 2
+        working-directory: 2022/rust/day2
+        run: cargo check && cargo test && cargo run input.txt
+
+      - name: Rust & Cargo - AoC 2022 day 3
+        working-directory: 2022/rust/day3
         run: cargo check && cargo test && cargo run input.txt
 
       - name: Prepare build directory (AoC C++)
