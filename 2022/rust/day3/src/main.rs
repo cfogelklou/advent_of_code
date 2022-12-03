@@ -3,6 +3,7 @@ use std::io::{self, BufReader};
 
 // For standard test cases, converts the test input to a vector of strings.
 // Todo, this should be in some sort of a utilities file. Figure out how to do that :-D
+#[allow(dead_code)]
 fn test_input_to_vec(s: String) -> Vec<String> {
     use std::io::BufRead;
     let b = BufReader::new(s.as_bytes());
