@@ -169,6 +169,48 @@ fn rucksack_filter(v:Vec<String>)->(i64, i64){
     return (total, 0);
 }
 
+
+fn rucksack_filter_groups(v:Vec<String>)->(i64, i64){   
+    let mut total: i64 = 0;
+    for i in (0..v.len()).step_by(3) {
+        let common_items:Vec<char> = Vec::new();
+        for j in (0..2){
+            let l = v[i*3 + j];
+            let r = v[i*3 + j + 1];
+            
+
+            let next_line:Vec<char> = v[i*3 + j];
+            let arr:Vec<char> = Vec::new();
+            next_line.chars().for_each(|c| {
+                println!("{}", c);
+                arr.push(c);
+            });
+    
+        }
+    }
+
+        //(0..next_line.len()).for_each(|i: usize| {
+        //    let c:char = next_line.chars().nth(i).unwrap();
+        //        arr.push(c);
+        //});
+        let items = arr.len();
+        let compartment_items = items / 2;
+        let l = arr[0..compartment_items].to_vec();
+        let r = arr[compartment_items..items].to_vec();
+        let mut common_items:Vec<char> = Vec::new();
+        l.iter().for_each(|x| {
+            if r.contains(x){
+                common_items.push(*x);
+            }
+        });
+        let score = get_score_for_char(common_items[0]);
+        total += score as i64;
+
+    }
+
+    return (total, 0);
+}
+
 // For standard test cases, converts the test input to a vector of strings.
 fn test_input_to_vec(s: String) -> Vec<String> {
     use std::io::BufRead;
