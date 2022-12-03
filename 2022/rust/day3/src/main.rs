@@ -1,14 +1,14 @@
 
 use std::io::{self, BufReader};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy,PartialEq, Eq, Debug)]
 enum RockPaperScissors {
     Rock = 0,
     Paper = 1,
     Scissors = 2
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 enum MatchResult {
     YouWin = 0,
     Draw = 3,
@@ -56,6 +56,7 @@ fn do_i_win(me:RockPaperScissors, you:RockPaperScissors) ->MatchResult {
     return m;
 }
 
+// First challenge, misinterpret the table
 #[allow(dead_code)]
 fn paper_rock_scissors_1(v:Vec<String>)->(i64, i64){   
     let mut total:i64 = 0;
@@ -78,6 +79,28 @@ fn paper_rock_scissors_1(v:Vec<String>)->(i64, i64){
 }
 
 #[allow(dead_code)]
+fn get_my_move(you:RockPaperScissors, result:MatchResult) -> RockPaperScissors {
+
+    let inc:i32 = match result {
+        MatchResult::Draw => 0,
+        MatchResult::IWin => 1,
+        _ => -1,
+    };
+    let me:i32 = ((you as i32) + inc) % 3;
+      
+    let mymove = match me {
+        -1 => RockPaperScissors::Scissors,
+        0 => RockPaperScissors::Rock,
+        1 => RockPaperScissors::Paper,
+        2 => RockPaperScissors::Scissors,
+        _ => RockPaperScissors::Paper
+    };
+
+    return mymove;
+}
+
+// Second challenge, 
+#[allow(dead_code)]
 fn paper_rock_scissors_2(v:Vec<String>)->(i64, i64){   
     let mut total:i64 = 0;
     for next_line in v.iter() {
@@ -86,9 +109,12 @@ fn paper_rock_scissors_2(v:Vec<String>)->(i64, i64){
         let you_enc = strategy_enc[0].chars().nth(0).unwrap();
         let me_enc = strategy_enc[1].chars().nth(0).unwrap();
         let you = get_move(you_enc);
-        let my_plan = get_plan(me_enc);
+        let my_plan:MatchResult = get_plan(me_enc);
 
+        let me: RockPaperScissors = get_my_move(you, my_plan);
+        
         let me_win = do_i_win(me, you);
+        assert_eq!(me_win, my_plan);
         let my_score = me_win as i32 + (me.clone() as i32) + 1;
 
         total += my_score as i64;
@@ -102,6 +128,78 @@ fn paper_rock_scissors(v:Vec<String>)->(i64, i64){
     return (r1, r2);
 }
 
+
+
+
+#[allow(dead_code)]
+fn get_score_for_char(c:char) -> i32 {
+    let cc = c as i32;
+    let aa = 'a' as i32;
+    let aaa = 'A' as i32;
+    return if c >= 'a' && c <= 'z' { cc - aa + 1 } else { cc - aaa + 27 }
+}
+
+fn rucksack_filter(v:Vec<String>)->(i64, i64){   
+    let mut total: i64 = 0;
+    for next_line in v.iter() {
+        let mut arr: Vec<char> = Vec::new();
+        next_line.chars().for_each(|c| {
+            println!("{}", c);
+            arr.push(c);
+        });
+        //(0..next_line.len()).for_each(|i: usize| {
+        //    let c:char = next_line.chars().nth(i).unwrap();
+        //        arr.push(c);
+        //});
+        let items = arr.len();
+        let compartment_items = items / 2;
+        let l = arr[0..compartment_items].to_vec();
+        let r = arr[compartment_items..items].to_vec();
+        let mut common_items:Vec<char> = Vec::new();
+        l.iter().for_each(|x| {
+            if r.contains(x){
+                common_items.push(*x);
+            }
+        });
+        let score = get_score_for_char(common_items[0]);
+        total += score as i64;
+
+    }
+
+    return (total, 0);
+}
+
+// For standard test cases, converts the test input to a vector of strings.
+fn test_input_to_vec(s: String) -> Vec<String> {
+    use std::io::BufRead;
+    let b = BufReader::new(s.as_bytes());
+    let mut v:Vec<String> = Vec::new();
+    for (_, line) in b.lines().enumerate() {    
+        let l:String = line.unwrap().trim().to_string();
+        v.push(l);
+    }  
+    return v;
+}
+
+
+#[allow(dead_code)]
+fn rucksack_test() {
+    
+    let raw_string = "vJrwpWtwJgWrhcsFMMfFFhFp\n\
+    jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL\n\
+    PmmdzqPrVvPwwTWBwg\n\
+    wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn\n\
+    ttgJtRGJQctTZtZT\n\
+    CrZsJsPPZsGzwwsLwLmpwMDw";
+
+    let v: Vec<String> = test_input_to_vec(raw_string.to_string());
+    
+    let (s, i) = rucksack_filter(v.clone());
+    println!("Score for common items is {}", s);
+    println!("My score by the real plan is {}", i);
+    assert_eq!(s, 157);
+    //assert_eq!(i, 12);
+}
 
 fn main()  -> io::Result<()> {
     use std::io::BufRead;
@@ -118,56 +216,31 @@ fn main()  -> io::Result<()> {
         let l:String = line.unwrap();
         v.push(l);
     }    
-    let (s, i) = paper_rock_scissors(v.clone());
-    println!("My score is {}", s);
-    println!("The elf's total calories are {}", i);
+    let (s, i) = rucksack_filter(v.clone());
+    println!("Score for common items is {}", s);
+    println!("My score by the real plan is {}", i);
+    //assert_eq!(s, 14375);
+    //assert_eq!(i, 10274);    
     Ok(())
 }
-
-
-
-#[allow(dead_code)]
-fn test_example_1() {
-    use std::io::BufRead;
-    let raw_string = "A Y\n\
-                            B X\n\
-                            C Z";
-
-    let b = BufReader::new(raw_string.as_bytes());
-    let mut v:Vec<String> = Vec::new();
-    for (_, line) in b.lines().enumerate() {    
-        let l:String = line.unwrap().trim().to_string();
-        v.push(l);
-    }  
-    
-    let (s, i) = paper_rock_scissors(v.clone());
-    println!("Your score {}", s);
-    assert_eq!(s, 15);
-    assert_eq!(i, 0);
-}
-
 
 #[cfg(test)]
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;
-
+ 
     #[test]
     fn t1() {
-        assert_eq!( MatchResult::Draw as i32, do_i_win( RockPaperScissors::Paper, RockPaperScissors::Paper) as i32);
-        assert_eq!( MatchResult::Draw as i32, do_i_win( RockPaperScissors::Rock, RockPaperScissors::Rock) as i32);
-        assert_eq!( MatchResult::Draw as i32, do_i_win( RockPaperScissors::Scissors, RockPaperScissors::Scissors) as i32);
-        assert_eq!( MatchResult::IWin as i32, do_i_win( RockPaperScissors::Scissors, RockPaperScissors::Paper) as i32);
-        assert_eq!( MatchResult::IWin as i32, do_i_win( RockPaperScissors::Rock, RockPaperScissors::Scissors) as i32);
-        assert_eq!( MatchResult::IWin as i32, do_i_win( RockPaperScissors::Paper, RockPaperScissors::Rock) as i32);
-        assert_eq!( MatchResult::YouWin as i32, do_i_win( RockPaperScissors::Scissors, RockPaperScissors::Rock) as i32);
-        assert_eq!( MatchResult::YouWin as i32, do_i_win( RockPaperScissors::Rock, RockPaperScissors::Paper) as i32);
-        assert_eq!( MatchResult::YouWin as i32, do_i_win( RockPaperScissors::Paper, RockPaperScissors::Scissors) as i32);
+        assert_eq!(get_score_for_char('a'), 1);
+        assert_eq!(get_score_for_char('b'), 2);
+        assert_eq!(get_score_for_char('z'), 26);
+        assert_eq!(get_score_for_char('A'), 27);
+        assert_eq!(get_score_for_char('Z'), 52);
     }
 
     #[test]
-    fn t2() {
-        test_example_1();
+    fn t3() {
+        rucksack_test();
     }
 
 }
