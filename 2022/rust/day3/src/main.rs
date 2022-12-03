@@ -25,26 +25,22 @@ fn get_score_for_char(c:char) -> i32 {
 
 // For part 1, split the rucksacks into two groups and get the score.
 fn rucksack_filter(v:Vec<String>)->(i64, i64){   
+    
     let mut total: i64 = 0;
     for next_line in v.iter() {
-        let mut arr: Vec<char> = Vec::new();
-        next_line.chars().for_each(|c| {
-            arr.push(c);
-        });
-        //(0..next_line.len()).for_each(|i: usize| {
-        //    let c:char = next_line.chars().nth(i).unwrap();
-        //        arr.push(c);
-        //});
-        let items = arr.len();
-        let compartment_items = items / 2;
-        let l = arr[0..compartment_items].to_vec();
-        let r = arr[compartment_items..items].to_vec();
-        let mut common_items:Vec<char> = Vec::new();
-        l.iter().for_each(|x| {
-            if r.contains(x){
-                common_items.push(*x);
-            }
-        });
+
+
+        let arr: Vec<char> = next_line.chars().collect();
+
+        let compartment_items =  arr.len() / 2;
+        let r = arr[compartment_items..arr.len()].to_vec(); // Righthand compartment
+        // Filter items in the left hand compartment that also exist in the righthand compartment
+        let common_items:Vec<char> = arr[0..compartment_items].to_vec().into_iter().filter(|x| r.contains(x) ).collect();
+        
+        // Assume >=1 item
+        assert_eq!(true, common_items.len() >= 1);
+
+        // Get the score
         let score = get_score_for_char(common_items[0]);
         total += score as i64;
 
