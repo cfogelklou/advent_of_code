@@ -15,71 +15,6 @@ fn test_input_to_vec(s: String) -> Vec<String> {
     return v;
 }
 
-// Gets the score for a character
-fn get_score_for_char(c:char) -> i32 {
-    let cc = c as i32;
-    let aa = 'a' as i32;
-    let aaa = 'A' as i32;
-    return if c >= 'a' && c <= 'z' { cc - aa + 1 } else { cc - aaa + 27 }
-}
-
-// For part 1, split the rucksacks into two groups and get the score.
-fn rucksack_filter(v:Vec<String>)->(i64, i64){   
-    
-    let mut total: i64 = 0;
-    for next_line in v.iter() {
-
-
-        let arr: Vec<char> = next_line.chars().collect();
-
-        let compartment_items =  arr.len() / 2;
-        let r = arr[compartment_items..arr.len()].to_vec(); // Righthand compartment
-        // Filter items in the left hand compartment that also exist in the righthand compartment
-        let mut common_items:Vec<char> = arr[0..compartment_items].to_vec().into_iter().filter(|x| r.contains(x) ).collect();
-        
-        // Assume >=1 item
-        assert_eq!(true, common_items.len() >= 1);
-        common_items.dedup();
-        assert_eq!(1, common_items.len());
-
-        // Get the score
-        let score = get_score_for_char(common_items[0]);
-        total += score as i64;
-
-    }
-
-    return (total, 0);
-}
-
-// For the second one, split into groups of 3 and look for common items
-fn rucksack_filter_groups(v:Vec<String>)->(i64, i64){   
-    let mut total: i64 = 0;
-
-    // Go through each group
-    for i in (0..v.len()).step_by(3) {
-        let mut common_items:Vec<char> = Vec::new();
-        let first:Vec<char> = v[i].chars().collect();
-        for j in 1..3{
-            let r:Vec<char> = v[i + j].chars().collect();
-            // Either compare the the first vector, or to the common_items from last pass
-            let cmp: &Vec<char> = if j == 1 { &first } else { &common_items };            
-
-            // Filter items that exist in both. May create duplicates.
-            let mut this_common:Vec<char> = cmp.to_vec().into_iter().filter(|x| r.contains(x) ).collect();            
-            this_common.dedup();
-            common_items = this_common;
-        }
-        assert_eq!(true, common_items.len() >= 1);
-        common_items.dedup();
-        assert_eq!(1, common_items.len());
-
-        let score = get_score_for_char(common_items[0]);
-        total += score as i64;
-
-    }
-
-    return (total, 0);
-}
 
 #[allow(dead_code)]
 fn split_into_tuples(s:String) -> ((i32, i32), (i32, i32)){
@@ -106,7 +41,7 @@ fn complete_containment(a:(i32,i32), b:(i32,i32)) -> bool {
 
 
 // For part 1, split the rucksacks into two groups and get the score.
-fn how_many_assignments_is_one_contained_in_the_other(v:Vec<String>)->(i32, i32){   
+fn how_many_assignments_is_one_contained_in_the_other(v:Vec<String>)->i32{   
     
     let mut total: i32 = 0;
     for next_line in v.iter() {
@@ -116,9 +51,36 @@ fn how_many_assignments_is_one_contained_in_the_other(v:Vec<String>)->(i32, i32)
         }
     }
 
-    return (total, 0);
+    return total;
 }
 
+fn partial_containment(a:(i32,i32), b:(i32,i32)) -> bool {
+    // I'm too tired to think, so using a method that is guaranteed to work rather than a potentially simpler comparison
+    let mut overlap = false;
+    let mut a_sections:Vec<i32> = Vec::new();
+    for i in a.0..(a.1+1) {
+        a_sections.push(i);
+    }
+    for i in b.0..(b.1+1) {
+        overlap = overlap || a_sections.contains(&i);
+    }
+
+    return overlap;
+}
+
+// For part 2, Check if there is any overlap
+fn how_many_assignments_is_there_any_overlap(v:Vec<String>)->i32{   
+    
+    let mut total: i32 = 0;
+    for next_line in v.iter() {
+        let partners: ((i32, i32), (i32, i32)) = split_into_tuples(next_line.clone());
+        if partial_containment(partners.0, partners.1) {
+            total += 1;
+        }
+    }
+
+    return total;
+}
 
 #[cfg(test)]
 mod tests {
@@ -126,7 +88,7 @@ mod tests {
     use super::*;
  
     #[test]
-    fn camp_cleanup() {
+    fn camp_cleanup_1() {
         
         let raw_string = "2-4,6-8
         2-3,4-5
@@ -137,13 +99,34 @@ mod tests {
     
         let v: Vec<String> = test_input_to_vec(raw_string.to_string());
         
-        let (s, _) = how_many_assignments_is_one_contained_in_the_other(v.clone());
+        let s = how_many_assignments_is_one_contained_in_the_other(v.clone());
         //let (i, _) = rucksack_filter_groups(v.clone());
         println!("Overlapping sections {}", s);
         //println!("Badge scores is {}", i);
         assert_eq!(s, 2);
         //assert_eq!(i, 70);
     }
+
+    #[test]
+    fn camp_cleanup_2() {
+        
+        let raw_string = "2-4,6-8
+        2-3,4-5
+        5-7,7-9
+        2-8,3-7
+        6-6,4-6
+        2-6,4-8";
+    
+        let v: Vec<String> = test_input_to_vec(raw_string.to_string());
+        
+        let i = how_many_assignments_is_there_any_overlap(v.clone());
+        //let (i, _) = rucksack_filter_groups(v.clone());
+        println!("Overlapping sections {}", i);
+        //println!("Badge scores is {}", i);
+        assert_eq!(i, 4);
+        //assert_eq!(i, 70);
+    }
+
 
     #[test]
     fn t1() {
@@ -175,11 +158,11 @@ fn main()  -> io::Result<()> {
         let l:String = line.unwrap();
         v.push(l);
     }    
-    let (s, _) = how_many_assignments_is_one_contained_in_the_other(v.clone());
-    //let (i, _) = rucksack_filter_groups(v.clone());
+    let s = how_many_assignments_is_one_contained_in_the_other(v.clone());
+    let i = how_many_assignments_is_there_any_overlap(v.clone());
     println!("Overlapping sections {}", s);
-    //println!("Badge scores is {}", i);
-    //assert_eq!(s, 14375);
-    //assert_eq!(i, 10274);    
+    println!("Part 2 is {}", i);
+    //assert_eq!(s, 515);
+    //assert_eq!(i, 883);    
     Ok(())
 }
