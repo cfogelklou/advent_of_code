@@ -162,7 +162,7 @@ fn main()  -> io::Result<()> {
     let i = how_many_assignments_is_there_any_overlap(v.clone());
     println!("Overlapping sections {}", s);
     println!("Part 2 is {}", i);
-    //assert_eq!(s, 515);
-    //assert_eq!(i, 883);    
+    assert_eq!(s, 515);
+    assert_eq!(i, 883);    
     Ok(())
 }
