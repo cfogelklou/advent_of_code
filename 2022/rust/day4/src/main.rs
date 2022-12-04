@@ -96,6 +96,29 @@ fn split_into_tuples(s:String) -> ((i32, i32), (i32, i32)){
     return (range_tuples[0],range_tuples[1]);
 }
 
+fn is_range_contained(a:(i32,i32), b:(i32,i32)) -> bool {
+    return  b.0 >= a.0 && b.1 <= a.1;
+}
+
+fn complete_containment(a:(i32,i32), b:(i32,i32)) -> bool {
+    return is_range_contained(a, b) || is_range_contained(b, a);
+}
+
+
+// For part 1, split the rucksacks into two groups and get the score.
+fn how_many_assignments_is_one_contained_in_the_other(v:Vec<String>)->(i32, i32){   
+    
+    let mut total: i32 = 0;
+    for next_line in v.iter() {
+        let partners: ((i32, i32), (i32, i32)) = split_into_tuples(next_line.clone());
+        if complete_containment(partners.0, partners.1) {
+            total += 1;
+        }
+    }
+
+    return (total, 0);
+}
+
 
 #[cfg(test)]
 mod tests {
@@ -114,12 +137,12 @@ mod tests {
     
         let v: Vec<String> = test_input_to_vec(raw_string.to_string());
         
-        let (s, _) = rucksack_filter(v.clone());
-        let (i, _) = rucksack_filter_groups(v.clone());
+        let (s, _) = how_many_assignments_is_one_contained_in_the_other(v.clone());
+        //let (i, _) = rucksack_filter_groups(v.clone());
         println!("Overlapping sections {}", s);
-        println!("Badge scores is {}", i);
-        assert_eq!(s, 157);
-        assert_eq!(i, 70);
+        //println!("Badge scores is {}", i);
+        assert_eq!(s, 2);
+        //assert_eq!(i, 70);
     }
 
     #[test]
@@ -131,26 +154,6 @@ mod tests {
         assert_eq!(8, x.1.1);
     }
 
-    // This test
-    #[test]
-    fn rucksack_test() {
-        
-        let raw_string = "vJrwpWtwJgWrhcsFMMfFFhFp\n\
-        jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL\n\
-        PmmdzqPrVvPwwTWBwg\n\
-        wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn\n\
-        ttgJtRGJQctTZtZT\n\
-        CrZsJsPPZsGzwwsLwLmpwMDw";
-    
-        let v: Vec<String> = test_input_to_vec(raw_string.to_string());
-        
-        let (s, _) = rucksack_filter(v.clone());
-        let (i, _) = rucksack_filter_groups(v.clone());
-        println!("Score for common items is {}", s);
-        println!("Badge scores is {}", i);
-        assert_eq!(s, 157);
-        assert_eq!(i, 70);
-    }
 
 
 }
@@ -172,10 +175,10 @@ fn main()  -> io::Result<()> {
         let l:String = line.unwrap();
         v.push(l);
     }    
-    let (s, _) = rucksack_filter(v.clone());
-    let (i, _) = rucksack_filter_groups(v.clone());
-    println!("Score for common items is {}", s);
-    println!("Badge scores is {}", i);
+    let (s, _) = how_many_assignments_is_one_contained_in_the_other(v.clone());
+    //let (i, _) = rucksack_filter_groups(v.clone());
+    println!("Overlapping sections {}", s);
+    //println!("Badge scores is {}", i);
     //assert_eq!(s, 14375);
     //assert_eq!(i, 10274);    
     Ok(())
