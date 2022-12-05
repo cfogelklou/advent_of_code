@@ -1,20 +1,7 @@
 
 use std::{io::{self, BufReader}};
 
-// For standard test cases, converts the test input to a vector of strings.
-// Todo, this should be in some sort of a utilities file. Figure out how to do that :-D
-#[allow(dead_code)]
-fn test_input_to_vec(s: String) -> Vec<String> {
-    use std::io::BufRead;
-    let b = BufReader::new(s.as_bytes());
-    let mut v:Vec<String> = Vec::new();
-    for (_, line) in b.lines().enumerate() {    
-        let l:String = line.unwrap().trim().to_string();
-        v.push(l);
-    }  
-    return v;
-}
-
+mod utils;
 
 #[allow(dead_code)]
 fn split_into_tuples(s:String) -> ((i32, i32), (i32, i32)){
@@ -97,7 +84,7 @@ mod tests {
         6-6,4-6
         2-6,4-8";
     
-        let v: Vec<String> = test_input_to_vec(raw_string.to_string());
+        let v: Vec<String> = utils::test_input_to_vec(raw_string.to_string());
         
         let s = how_many_assignments_is_one_contained_in_the_other(v.clone());
         //let (i, _) = rucksack_filter_groups(v.clone());
@@ -117,7 +104,7 @@ mod tests {
         6-6,4-6
         2-6,4-8";
     
-        let v: Vec<String> = test_input_to_vec(raw_string.to_string());
+        let v: Vec<String> = utils::test_input_to_vec(raw_string.to_string());
         
         let i = how_many_assignments_is_there_any_overlap(v.clone());
         //let (i, _) = rucksack_filter_groups(v.clone());
