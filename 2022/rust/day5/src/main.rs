@@ -1,5 +1,5 @@
 
-use std::{io::{self, BufReader}};
+use std::{io::{self, BufReader}, collections::{VecDeque, HashMap}};
 
 mod utils;
 
@@ -77,8 +77,9 @@ fn how_many_assignments_is_there_any_overlap(v:Vec<String>)->i32{
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 enum TypeOfLine {
     Crate = 0,
-    Nothing = 1,
-    Instruction = 2
+    NumCrates = 1,
+    Nothing = 2,
+    Instruction = 3
 }
 
 #[allow(dead_code)]
@@ -89,9 +90,76 @@ fn get_type_of_line(s_in:String) -> TypeOfLine {
         t = TypeOfLine::Crate;
     } else if (s.contains("move")) { 
         t = TypeOfLine::Instruction;
+    } else if s.contains("1") {
+        t = TypeOfLine::NumCrates;
     }
     return t;
 }
+
+#[allow(dead_code)]
+fn get_crate_arr(s:String)->Vec<char> {
+    let c = s.chars();
+    let len = s.len();
+    let stacks = len / 3;
+    let mut rvec:Vec<char> = Vec::new();
+
+    for i in 0..stacks {
+        let slice_begin = i * 3;
+        let slice_end = slice_begin + 3;
+        let the_slice = &s[slice_begin..slice_end];
+        let c = the_slice.chars().nth(1).unwrap();
+        rvec.push(c);
+    }
+
+    return rvec;
+}
+
+#[allow(dead_code)]
+fn get_num_stacks(s:String)->i32 {
+    let v:Vec<&str> = s.split_whitespace().into_iter().collect();
+    let l = v.len();
+    return l as i32;
+}
+
+#[allow(dead_code)]
+fn extract_num_stacks(v:Vec<String>)->i32{   
+    let mut num_stacks: i32 = 0;
+    //let mut stacks: Vec<VecDeque<char>> = Vec::new();
+    for next_line in v.iter() {
+        let t = get_type_of_line(next_line.to_string());
+        if (t == TypeOfLine::NumCrates){
+            num_stacks = get_num_stacks(next_line.to_string());
+        }
+    }
+
+    return num_stacks;
+}
+
+#[allow(dead_code)]
+fn process_stacks(v:Vec<String>, num_stacks:i32)->i32{   
+    let mut total: i32 = 0;
+    let mut stacks: HashMap<i32, Vec<char>> = HashMap::new();
+    for next_line in v.iter() {
+        let t = get_type_of_line(next_line.to_string());
+        match t {
+            TypeOfLine::Crate => {
+                let len = next_line.len();
+                for i in (0..len).step_by(4){                    
+                    let slice_begin = i + 1;
+                    let slice_end = slice_begin + 3;        
+                    let crate_str: &str = &next_line[slice_begin..slice_end];
+                    println!("{}", crate_str);
+                }
+            },
+            TypeOfLine::NumCrates => {},
+            TypeOfLine::Nothing => {},
+            TypeOfLine::Instruction => {},
+        };
+    }
+
+    return total;
+}
+
 
 #[cfg(test)]
 mod tests {
@@ -112,11 +180,15 @@ mod tests {
         move 2 from 2 to 1
         move 1 from 1 to 2";
     
-        let v: Vec<String> = utils::test_input_to_vec(raw_string.to_string());
+        let v: Vec<String> = utils::test_input_to_vec(raw_string.to_string(), false);
+        assert_eq!(3, get_num_stacks(v[3].to_string()));
+        let num_stacks = extract_num_stacks(v.clone());
+        assert_eq!(3, num_stacks);
+
         assert_eq!(TypeOfLine::Crate, get_type_of_line(v[0].to_string()));
         assert_eq!(TypeOfLine::Crate, get_type_of_line(v[1].to_string()));
         assert_eq!(TypeOfLine::Crate, get_type_of_line(v[2].to_string()));
-        assert_eq!(TypeOfLine::Nothing, get_type_of_line(v[3].to_string()));
+        assert_eq!(TypeOfLine::NumCrates, get_type_of_line(v[3].to_string()));
         assert_eq!(TypeOfLine::Nothing, get_type_of_line(v[4].to_string()));        
         assert_eq!(TypeOfLine::Instruction, get_type_of_line(v[5].to_string()));
         assert_eq!(TypeOfLine::Instruction, get_type_of_line(v[6].to_string()));
@@ -129,7 +201,55 @@ mod tests {
     }
 
     #[test]
+    fn check_stack_sep() {
+        
+        let raw_string = 
+"   [D]    
+[N] [C]    
+[Z] [M] [P]
+1   2   3 
+        
+move 1 from 2 to 1
+move 3 from 1 to 3
+move 2 from 2 to 1
+move 1 from 1 to 2";
+    
+        let v: Vec<String> = utils::test_input_to_vec(raw_string.to_string(), false);
+        get_crate_arr(v[0].to_string());
+        get_crate_arr(v[1].to_string());
+        get_crate_arr(v[2].to_string());
+
+        //let s = how_many_assignments_is_one_contained_in_the_other(v.clone());
+        //println!("Overlapping sections {}", s);
+        //assert_eq!(s, 2);
+    }
+
+    #[test]
     fn camp_cleanup_2() {
+        
+        let raw_string = 
+"   [D]    
+[N] [C]    
+[Z] [M] [P]
+1   2   3 
+
+move 1 from 2 to 1
+move 3 from 1 to 3
+move 2 from 2 to 1
+move 1 from 1 to 2";
+    
+        let v: Vec<String> = utils::test_input_to_vec(raw_string.to_string(), false);
+        let num_stacks = extract_num_stacks(v.clone());
+        assert_eq!(3, num_stacks);        
+        process_stacks(v, num_stacks);
+        
+        //let s = how_many_assignments_is_one_contained_in_the_other(v.clone());
+        //println!("Overlapping sections {}", s);
+        //assert_eq!(s, 2);
+    }
+
+    #[test]
+    fn camp_cleanup_3() {
         
         let raw_string = "2-4,6-8
         2-3,4-5
@@ -138,7 +258,7 @@ mod tests {
         6-6,4-6
         2-6,4-8";
     
-        let v: Vec<String> = utils::test_input_to_vec(raw_string.to_string());
+        let v: Vec<String> = utils::test_input_to_vec(raw_string.to_string(), false);
         
         let i = how_many_assignments_is_there_any_overlap(v.clone());
         //let (i, _) = rucksack_filter_groups(v.clone());
