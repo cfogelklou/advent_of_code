@@ -156,6 +156,8 @@ fn process_stacks(v:Vec<String>, num_stacks:i32, crate_mover_9000:bool)->Vec<cha
             TypeOfLine::Nothing => {},
             TypeOfLine::Instruction => {
                 let (m, f, t) = get_instruction(next_line);
+
+                // Todo: How to do this without cloning?
                 let mut from_stack: VecDeque<char> = stacks_arr[(f-1) as usize].clone();
                 let mut to_stack: VecDeque<char> = stacks_arr[(t-1) as usize].clone();
                 assert_eq!(true, from_stack.len() >= m as usize);
@@ -186,6 +188,7 @@ fn process_stacks(v:Vec<String>, num_stacks:i32, crate_mover_9000:bool)->Vec<cha
                         to_stack.push_back(c);
                     }
                 }
+                // Todo: How to do this without cloning? It's inefficient as all hell.
                 stacks_arr[(f-1) as usize] = from_stack;
                 stacks_arr[(t-1) as usize] = to_stack;
 
