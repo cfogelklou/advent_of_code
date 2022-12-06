@@ -213,152 +213,18 @@ mod tests {
     #[test]
     fn crates_check_0() {
         
-        let raw_string = " 
-                                        [D]    
-                                    [N] [C]    
-                                    [Z] [M] [P]
-                                     1   2   3 
-                                            
-                                    move 1 from 2 to 1
-                                    move 3 from 1 to 3
-                                    move 2 from 2 to 1
-                                    move 1 from 1 to 2".to_string();
-    
-        
-        let v1: Vec<String> = utils::test_input_to_vec(raw_string, false);
-        // Trim the whitespace that we unfortunately inserted to make the formatting nice.
-        let v:Vec<String> = v1.iter().map(|x| { 
-            let beg = cmp::min(36, x.len());
-            let s:&str = &x[beg..x.len()];
-            return s.to_string();
-        }).collect();
-        let num_stacks = extract_num_stacks(v.clone());
-        assert_eq!(3, num_stacks);        
-        let top_chars = process_stacks(v, num_stacks, false);
-        for i in 0..top_chars.len(){
-            println!("{}", top_chars[i]);
-        }
-        assert_eq!('C', top_chars[0]);
-        assert_eq!('M', top_chars[1]);
-        assert_eq!('Z', top_chars[2]);
+        let raw_string: String = "mjqjpqmgbljsphdztnvjfqwrcgsmlb
+        bvwbjplbgvbhsrlpgdmjqwftvncz
+        nppdvjthqldpwncqszvftbrmjlhg
+        nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg
+        zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw".to_string();
+            
+        let v: Vec<String> = utils::test_input_to_vec(raw_string, true);
+        assert_ne!(0, v.len());
+
     }
 
-    #[test]
-    fn crates_check_1() {
-        
-        let raw_string = " 
-                                        [D]    
-                                    [N] [C]    
-                                    [Z] [M] [P]
-                                     1   2   3 
-                                            
-                                    move 1 from 2 to 1
-                                    move 3 from 1 to 3
-                                    move 2 from 2 to 1
-                                    move 1 from 1 to 2".to_string();
     
-        
-        let v1: Vec<String> = utils::test_input_to_vec(raw_string, false);
-        // Trim the whitespace that we unfortunately inserted to make the formatting nice.
-        let v:Vec<String> = v1.iter().map(|x| { 
-            let beg = cmp::min(36, x.len());
-            let s:&str = &x[beg..x.len()];
-            return s.to_string();
-        }).collect();
-
-        assert_eq!(3, get_num_stacks(v[3].to_string()));
-        let num_stacks = extract_num_stacks(v.clone());
-        assert_eq!(3, num_stacks);
-
-        assert_eq!(TypeOfLine::Crate, get_type_of_line(v[1].to_string()));
-        assert_eq!(TypeOfLine::Crate, get_type_of_line(v[2].to_string()));
-        assert_eq!(TypeOfLine::Crate, get_type_of_line(v[3].to_string()));
-        assert_eq!(TypeOfLine::NumCrates, get_type_of_line(v[4].to_string()));
-        assert_eq!(TypeOfLine::Nothing, get_type_of_line(v[5].to_string()));        
-        assert_eq!(TypeOfLine::Instruction, get_type_of_line(v[6].to_string()));
-        assert_eq!(TypeOfLine::Instruction, get_type_of_line(v[7].to_string()));
-        assert_eq!(TypeOfLine::Instruction, get_type_of_line(v[8].to_string()));
-        assert_eq!(TypeOfLine::Instruction, get_type_of_line(v[9].to_string()));
-        
-        //let s = how_many_assignments_is_one_contained_in_the_other(v.clone());
-        //println!("Overlapping sections {}", s);
-        //assert_eq!(s, 2);
-    }
-
-    #[test]
-    fn check_stack_sep() {
-        
-        let raw_string = " 
-                                        [D]    
-                                    [N] [C]    
-                                    [Z] [M] [P]
-                                     1   2   3 
-                                            
-                                    move 1 from 2 to 1
-                                    move 3 from 1 to 3
-                                    move 2 from 2 to 1
-                                    move 1 from 1 to 2".to_string();
-    
-        
-        let v1: Vec<String> = utils::test_input_to_vec(raw_string, false);
-        // Trim the whitespace that we unfortunately inserted to make the formatting nice.
-        let v:Vec<String> = v1.iter().map(|x| { 
-            let beg = cmp::min(36, x.len());
-            let s:&str = &x[beg..x.len()];
-            return s.to_string();
-        }).collect();
-
-        {
-            let (m,f,t) = get_instruction(&v[6]);
-            assert_eq!(m, 1);
-            assert_eq!(f, 2);
-            assert_eq!(t, 1);
-        }
-
-        {
-            let (m,f,t) = get_instruction("move 22 from 3 to 5");
-            assert_eq!(m, 22);
-            assert_eq!(f, 3);
-            assert_eq!(t, 5);
-        }
-
-
-        //let s = how_many_assignments_is_one_contained_in_the_other(v.clone());
-        //println!("Overlapping sections {}", s);
-        //assert_eq!(s, 2);
-    }
-
-    #[test]
-    fn crates_check_9001() {
-        
-        let raw_string = " 
-                                        [D]    
-                                    [N] [C]    
-                                    [Z] [M] [P]
-                                     1   2   3 
-                                            
-                                    move 1 from 2 to 1
-                                    move 3 from 1 to 3
-                                    move 2 from 2 to 1
-                                    move 1 from 1 to 2".to_string();
-    
-        
-        let v1: Vec<String> = utils::test_input_to_vec(raw_string, false);
-        // Trim the whitespace that we unfortunately inserted to make the formatting nice.
-        let v:Vec<String> = v1.iter().map(|x| { 
-            let beg = cmp::min(36, x.len());
-            let s:&str = &x[beg..x.len()];
-            return s.to_string();
-        }).collect();
-        let num_stacks = extract_num_stacks(v.clone());
-        assert_eq!(3, num_stacks);        
-        let top_chars = process_stacks(v, num_stacks, true);
-        assert_eq!('M', top_chars[0]);
-        assert_eq!('C', top_chars[1]);
-        assert_eq!('D', top_chars[2]);
-        let s: String = top_chars.into_iter().collect();
-        println!("Cratemover 9000: {}", s);
-    }
 
 }
 
