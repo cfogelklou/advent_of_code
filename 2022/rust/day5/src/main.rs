@@ -319,7 +319,7 @@ mod tests {
             let (m,f,t) = get_instruction("move 22 from 3 to 5");
             assert_eq!(m, 22);
             assert_eq!(f, 3);
-            assert_eq!(t, 1);
+            assert_eq!(t, 5);
         }
 
 
