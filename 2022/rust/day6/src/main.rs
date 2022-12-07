@@ -202,10 +202,36 @@ fn process_stacks(v:Vec<String>, num_stacks:i32, crate_mover_9000:bool)->Vec<cha
     }).collect();
 }
 
+#[allow(dead_code)]
+fn get_chars_to_start_seq(a:&str) -> i32 {
+    let mut v:VecDeque<char> = VecDeque::new();
+    let mut c_idx = 0;
+    let mut first_start:i32 = -1;
+    let start_length: usize = 4;
+    a.chars().for_each(|c: char| {
+        v.push_back(c);
+        if (v.len() > start_length) {
+            v.pop_front();
+        }
+
+        if v.len() >= start_length {
+            let mut dedupedVector:Vec<char> = v.iter().map(|c| { return *c; } ).collect();
+            dedupedVector.sort();
+            dedupedVector.dedup();
+            if dedupedVector.len() == start_length {
+                first_start = if first_start >= 0 { first_start } else { c_idx + 1 };
+            }
+        }
+        
+        c_idx+=1;
+    });
+    return first_start;
+}
+
 
 #[cfg(test)]
 mod tests {
-    use std::cmp;
+    
 
     // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;
@@ -221,6 +247,26 @@ mod tests {
             
         let v: Vec<String> = utils::test_input_to_vec(raw_string, true);
         assert_ne!(0, v.len());
+        {
+            let a = &v[0];
+            assert_eq!(7, get_chars_to_start_seq(a));
+        }
+        {
+            let a = &v[1];
+            assert_eq!(5, get_chars_to_start_seq(a));
+        }
+        {
+            let a = &v[2];
+            assert_eq!(6, get_chars_to_start_seq(a));
+        }
+        {
+            let a = &v[3];
+            assert_eq!(10, get_chars_to_start_seq(a));
+        }
+        {
+            let a = &v[4];
+            assert_eq!(11, get_chars_to_start_seq(a));
+        }
 
     }
 
