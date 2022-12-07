@@ -294,11 +294,13 @@ fn main()  -> io::Result<()> {
     for next_line in v.iter() {
         let onestar = get_chars_to_start_seq(&next_line, 4);
         println!("*  Start was at char {}", onestar);
+        assert_eq!(onestar, 1198);
     }
 
     for next_line in v.iter() {
         let onestar = get_chars_to_start_seq(&next_line, 14);
         println!("** Start was at char {}", onestar);
+        assert_eq!(3120, onestar);
     }    
 
     Ok(())
