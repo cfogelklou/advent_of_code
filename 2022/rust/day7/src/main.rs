@@ -3,6 +3,18 @@ use std::{io::{self}, collections::{VecDeque}, cmp};
 
 mod utils;
 
+/*
+    We will use a key, value map (or hashmap) for each item.
+    The value will be a struct with 
+    typedef struct DirectoryNode 
+    {
+        name: String;
+        size: int; // Zero if it is a directory
+        children: Map<String, DirectoryNode>;
+    }
+
+*/
+
 #[allow(dead_code)]
 fn split_into_tuples(s:String) -> ((i32, i32), (i32, i32)){
     
