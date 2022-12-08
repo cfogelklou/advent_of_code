@@ -6,8 +6,6 @@ use std::cell::RefCell;
 mod utils;
 
 
-
-
 /*
     We will use a key, value map (or hashmap) for each item.
     The value will be a struct with 
@@ -130,46 +128,53 @@ mod tests {
         assert_ne!(0, v.len());
 
         let mut line_cnt = 0;
+        let mut pwd: String= "".to_string();
+        let mut paths: VecDeque<String> = VecDeque::new();
+        paths.push_back(pwd.to_string());
 
-        let mut root_dir = MyHashEntry {
-            name: "/".to_string(),
-            size: 0,
-            parent:None,
-            kids: HashMap::new()
-        };
+        let all_files_and_paths: Vec<(&str, usize)> = Vec::new();
 
-        let mut current_node:&MyHashEntry = &root_dir;
 
         for next_line in v {
             line_cnt += 1;
             let words:Vec<&str> = next_line.split_whitespace().collect();
             if words.len() == 0 { break; }
             if 0 == words[0].chars().count() { break; }
-            if "$" == words[0]{
-                
+            if "$" == words[0]{                
                 if "cd" == words[1]{
                     println!("line {}: cd {}", line_cnt, words[2]);
                     if ".." == words[2]{
-                        let up = current_node.parent.unwrap();
-                        
-                        println!("line {}: cd {}", line_cnt, current_node.get_name());
-                    }
-                    
+                        let up_path = paths.pop_back().unwrap();
+                        let up_len = up_path.len();                        
+                        let new_pwd = &pwd.to_string()[0..(pwd.len()-up_len)];
+                        pwd = new_pwd.to_string();
+                        println!("line {}: Current path is {}", line_cnt, pwd );
+                    }                    
                     else {
-
+                        if words[2] == "/" {
+                            paths.clear();
+                            pwd = String::from("/");
+                        }
+                        else {
+                            let mut new_path: String = String::from("/");
+                            new_path.push_str(words[2].clone());                            
+                            paths.push_back(new_path.clone());
+                            pwd.push_str(&new_path.clone());
+                        }
+                        println!("line {}: Current path is {}", line_cnt, pwd );
                     }
                 }
                 else {
-                    println!("line {}: a command {}", line_cnt, words[1]);
+                    println!("line {}: command {}", line_cnt, words[1]);
                 }
             } else {
                 if "dir" == words[0]{
-                    println!("line {}: a directory {}", line_cnt, words[1]);
+                    println!("line {}: directory {}", line_cnt, words[1]);
                 }
                 else {
                     let filesize = words[0].parse::<i32>().unwrap();
                     if 0 != filesize {
-                        println!("line {}: a filesize {}", line_cnt, filesize);
+                        println!("line {}: filesize {}", line_cnt, filesize);
                     }
                 }
             }
