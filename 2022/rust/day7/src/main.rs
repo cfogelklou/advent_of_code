@@ -109,14 +109,9 @@ fn parse_directories(v: Vec<String>)->(HashMap<String, usize>, usize) {
 
 }
 
-
-
-
-
 #[cfg(test)]
 mod tests {
     
-
     // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;
  
@@ -125,22 +120,22 @@ mod tests {
         
         let raw_string: String = "$ cd /
         $ ls
-        dir apath
+        dir a
         14848514 b.txt
         8504156 c.dat
-        dir dpath
-        $ cd apath
+        dir d
+        $ cd a
         $ ls
-        dir epath
+        dir e
         29116 f
         2557 g
         62596 h.lst
-        $ cd epath
+        $ cd e
         $ ls
         584 i
         $ cd ..
         $ cd ..
-        $ cd dpath
+        $ cd d
         $ ls
         4060174 j
         8033020 d.log
