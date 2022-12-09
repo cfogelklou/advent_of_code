@@ -59,6 +59,11 @@ jobs:
         working-directory: 2022/rust/day8
         run: cargo check && cargo test && cargo run input.txt           
 
+      - name: Rust & Cargo - AoC 2022 day 9
+        working-directory: 2022/rust/day9
+        run: cargo check && cargo test && cargo run input.txt           
+
+
       - name: Prepare build directory (AoC C++)
         run: |
           mkdir -p build
