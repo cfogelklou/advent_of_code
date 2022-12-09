@@ -39,7 +39,6 @@ fn get_head_movement(v: &Vec<String>) -> Vec<(i32, i32)> {
     return head_movement;
 }
 
-
 // Generates a vector that follows the head vector.
 #[allow(dead_code)]
 fn get_tail_movement(hm: &Vec<(i32, i32)>) -> Vec<(i32, i32)> {
@@ -65,7 +64,6 @@ fn get_tail_movement(hm: &Vec<(i32, i32)>) -> Vec<(i32, i32)> {
     }
     return tail_movement;
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -183,7 +181,7 @@ fn main() -> io::Result<()> {
         let mut unique_tm = tm.clone();
         unique_tm.sort();
         unique_tm.dedup();
-        //assert_eq!(13, unique_tm.len());
+        assert_eq!(6197, unique_tm.len());
         println!("Unique tail positions: {}", unique_tm.len());
     }
 
