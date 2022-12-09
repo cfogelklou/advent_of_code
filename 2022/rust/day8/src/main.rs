@@ -362,6 +362,9 @@ fn main()  -> io::Result<()> {
     visible_trees.sort();
     visible_trees.dedup();
     println!("Number of visible trees is {}", visible_trees.len());
-    //assert_eq!(visible_trees.len(), 21);
+    if filename == "input.txt"{
+        assert_eq!(visible_trees.len(), 1835);
+    }
+
     Ok(())
 }
