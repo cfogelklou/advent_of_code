@@ -1,8 +1,4 @@
-use std::{
-    cmp,
-    collections::{HashMap, VecDeque},
-    io::{self},
-};
+use std::io::{self};
 mod utils;
 
 #[allow(dead_code)]
@@ -44,29 +40,24 @@ fn get_head_movement(v: &Vec<String>) -> Vec<(i32, i32)> {
 }
 
 
+// Generates a vector that follows the head vector.
 #[allow(dead_code)]
-fn get_tail_movement(hm: &Vec<(i32, i32)>, visualize: bool) -> Vec<(i32, i32)> {
+fn get_tail_movement(hm: &Vec<(i32, i32)>) -> Vec<(i32, i32)> {
     let mut tail_movement: Vec<(i32, i32)> = Vec::new();
     let mut x = 0;
     let mut y = 0;
-    //tail_movement.push((x, y));
     for head in hm {
         let (hx, hy) = head.clone();
 
-        if visualize {
-            println!("before moving tail");
-            draw_it((5, 5), head.clone(), (x, y));
-        }
+        let dx = hx - x;
+        let dy =  hy - y;
 
-        let delta_x = hx - x;
-        let delta_y =  hy - y;
-
-        if (delta_x).abs() < 2 && (delta_y).abs() < 2 {
+        if (dx).abs() < 2 && (dy).abs() < 2 {
             // Nothing to do
         }
         else {
-            x += (delta_x).signum();
-            y += (delta_y).signum();
+            x += (dx).signum();
+            y += (dy).signum();
  
         }
         tail_movement.push((x, y));
@@ -75,38 +66,6 @@ fn get_tail_movement(hm: &Vec<(i32, i32)>, visualize: bool) -> Vec<(i32, i32)> {
     return tail_movement;
 }
 
-
-
-#[allow(dead_code)]
-fn draw_it(wh: (i32, i32), xy: (i32, i32), txy: (i32, i32)) {
-    let (w, h) = wh;
-    let (x, y) = xy;
-    let (tx, ty) = txy;
-    println!("for x,y:{},{}", xy.0, xy.1);
-    for __y in 0..h {
-        let _y = h - 1 - __y;
-        let mut xystr: String = String::new();
-        for _x in 0..w {
-            let mut ch: String = String::from(".");
-            if _x == x && _y == y {
-                ch = String::from("H");
-            } else if _x == tx && _y == ty {
-                ch = String::from("T");
-            }
-            xystr.push_str(&ch);
-        }
-        println!("{}", xystr);
-    }
-}
-
-#[allow(dead_code)]
-fn get_hash_value_for_tree(x: i32, y: i32) -> String {
-    let mut h: String;
-    h = x.to_string();
-    h.push_str(",");
-    h.push_str(&y.to_string());
-    return h;
-}
 
 #[cfg(test)]
 mod tests {
@@ -127,7 +86,7 @@ mod tests {
         let v: Vec<String> = utils::test_input_to_vec(raw_string, true);
         assert_ne!(0, v.len());
         let hm = get_head_movement(&v);
-        let tm = get_tail_movement(&hm, true);
+        let tm = get_tail_movement(&hm);
         let mut unique_tm = tm.clone();
         unique_tm.sort();
         unique_tm.dedup();
@@ -158,7 +117,7 @@ mod tests {
                 } else {
                     tails[i - 1].clone()
                 };
-                let tm = get_tail_movement(&my_head, true);
+                let tm = get_tail_movement(&my_head);
                 tails.push(tm);
             }
 
@@ -220,7 +179,7 @@ fn main() -> io::Result<()> {
 
     // Part 1
     if true {
-        let tm = get_tail_movement(&hm, false);
+        let tm = get_tail_movement(&hm);
         let mut unique_tm = tm.clone();
         unique_tm.sort();
         unique_tm.dedup();
@@ -238,7 +197,7 @@ fn main() -> io::Result<()> {
             } else {
                 tails[i - 1].clone()
             };
-            let tm = get_tail_movement(&my_head, false);
+            let tm = get_tail_movement(&my_head);
             tails.push(tm);
         }
 
