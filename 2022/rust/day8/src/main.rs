@@ -147,54 +147,97 @@ fn get_2dvec(v: Vec<String>)->Vec<Vec<i32>> {
 }
 
 #[allow(dead_code)]
-fn get_hash_value_for_tree(x:i32, y:i32)->usize {
-    return (x as usize) * 16384 + (y as usize);
+fn get_hash_value_for_tree(x:i32, y:i32)->String {
+    let mut h:String;
+    h = x.to_string();
+    h.push_str(",");
+    h.push_str(&y.to_string());
+    return h;
 }
 
 #[allow(dead_code)]
-fn get_tree_height(vec2d: Vec<Vec<i32>>, x:i32, y:i32)->i32 {    
+fn get_tree_height(vec2d: &Vec<Vec<i32>>, x:i32, y:i32)->i32 {    
     let xvec = vec2d.get(y as usize).unwrap();
     let tree_height = xvec.get(x as usize).unwrap().clone();
     return tree_height;
 }
 
 #[allow(dead_code)]
-fn get_visible_trees_for_dir(wh:(i32,i32), forward_x:bool, forward_y: bool, vec2d: Vec<Vec<i32>>, visible_trees: &mut Vec<usize>) {
+fn get_visible_trees_for_dir(
+    wh:(i32,i32), vec2d: Vec<Vec<i32>>, visible_trees: &mut Vec<String>) {
     
-    println!("get_visible_trees_for_dir:: forward_x: {} forward_y:{}", forward_x, forward_y);
-    let (w,h) = wh;
-    let mut yvec = vec2d.clone();
-    if !forward_y {
-        yvec.reverse();
-    }
+    //println!("get_visible_trees_for_dir:: forward_x: {} forward_y:{}", forward_x, forward_y);
+    get_visible_trees_for_dir_x(wh, &vec2d, visible_trees);
 
-    for y in 0..h {
-        let mut min_tree_height = 0;
-        let mut xvec = yvec.get(y as usize).unwrap().clone();
-        if !forward_x {
-            xvec.reverse();
-        }
-        let mut dbg:String = String::from("");
-        let mut pushed_trees = 0;
-        for x in 0..w {
-            let tree_height = xvec.get(x as usize).unwrap().clone();
-            dbg.push_str(&tree_height.to_string());
-            if tree_height > min_tree_height {
-                min_tree_height = tree_height;
-                let h = get_hash_value_for_tree(x, y);
-                visible_trees.push(h);
-                pushed_trees += 1;
+    get_visible_trees_for_dir_y(wh, vec2d, visible_trees);    
+    
+}
+
+#[allow(dead_code)]
+fn get_visible_trees_for_dir_x(
+    wh:(i32,i32), 
+    vec2d: &Vec<Vec<i32>>, 
+    visible_trees: &mut Vec<String>) {
+    let (w,h) = wh;
+    for directions_x in 0..2 {
+        println!("New x direction..."); 
+        for _y in 0..h {
+            let y = _y;//if directions_y == 0 { _y } else { h - 1 - _y };
+            // Forwards 0..x
+            let mut dbg:String = String::from("");
+            let mut pushed_trees = 0;
+            let mut min_tree_height = 0;
+            for _x in 0..w {
+                let x = if directions_x == 0 { _x } else { w - 1 - _x };
+                let tree_height = get_tree_height(vec2d, x, y);
+                dbg.push_str(&tree_height.to_string());
+                if tree_height > min_tree_height {
+                    min_tree_height = tree_height;
+                    let h = get_hash_value_for_tree(x, y);
+                    visible_trees.push(h);
+                    pushed_trees += 1;
+                }                
             }
+            println!("Got heights {}, and pushed {}", dbg, pushed_trees);                       
         }
-        println!("Got heights {}, and pushed {}", dbg, pushed_trees);
-        println!("");
     }
 }
 
+#[allow(dead_code)]
+fn get_visible_trees_for_dir_y(
+    wh:(i32,i32), 
+    vec2d: Vec<Vec<i32>>, 
+    visible_trees: &mut Vec<String>) {
+    let (w,h) = wh;
+    for directions_y in 0..2 {
+        println!("New y direction..."); 
+        for _x in 0..w {
+            let x = _x;//if directions_y == 0 { _y } else { h - 1 - _y };
+            // Forwards 0..x
+            let mut dbg:String = String::from("");
+            let mut pushed_trees = 0;
+            let mut min_tree_height = 0;
+            for _y in 0..h {
+                let y = if directions_y == 0 { _y } else { h - 1 - _y };
+                let tree_height = get_tree_height(&vec2d, x, y);
+                dbg.push_str(&tree_height.to_string());
+                if tree_height > min_tree_height {
+                    min_tree_height = tree_height;
+                    let h = get_hash_value_for_tree(x, y);
+                    visible_trees.push(h);
+                    pushed_trees += 1;
+                }                
+            }
+            println!("Got heights {}, and pushed {}", dbg, pushed_trees);
+        }
+    }
+}
+
+
+
+
 #[cfg(test)]
 mod tests {
-
-    use core::num;
 
     // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;
@@ -214,18 +257,22 @@ mod tests {
         assert_eq!(w, 5);
         assert_eq!(h, 5);
         let vec2d = get_2dvec(v);
-        let mut visible_trees:Vec<usize> = Vec::new();
 
-        get_visible_trees_for_dir((w,h), true, true, vec2d.clone(), &mut visible_trees);
-        get_visible_trees_for_dir((w,h), true, false, vec2d.clone(), &mut visible_trees);
-        get_visible_trees_for_dir((w,h), false, false, vec2d.clone(), &mut visible_trees);
-        get_visible_trees_for_dir((w,h), false, true, vec2d.clone(), &mut visible_trees);
+        assert_eq!(get_tree_height(&vec2d, 0,0), 3);
+        assert_eq!(get_tree_height(&vec2d, 3,0), 7);
+        assert_eq!(get_tree_height(&vec2d, 4,3), 9);
+        assert_eq!(get_tree_height(&vec2d, 2,4), 3);
+        assert_eq!(get_tree_height(&vec2d, 3,4), 9);
 
+        let mut visible_trees:Vec<String> = Vec::new();
+
+        get_visible_trees_for_dir((w,h), vec2d.clone(), &mut visible_trees);
+
+        println!("Number of visible trees before_dedup {}", visible_trees.len());
         visible_trees.sort();
         visible_trees.dedup();
-        let num_visible_trees = visible_trees.len();
-        println!("Number of visible trees is {}", num_visible_trees);
-        assert_eq!(num_visible_trees, 21);
+        println!("Number of visible trees is {}", visible_trees.len());
+        assert_eq!(visible_trees.len(), 21);
 
         /*
         We have sides l, t, r, b
