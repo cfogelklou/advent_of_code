@@ -11,6 +11,7 @@ Due to nebulous reasoning involving Planck lengths, you should be able to model 
 
 Due to the aforementioned Planck lengths, the rope must be quite short; in fact, the head (H) and tail (T) must always be touching (diagonally adjacent and even overlapping both count as touching):
 
+```
 ....
 .TH.
 ....
@@ -23,8 +24,10 @@ Due to the aforementioned Planck lengths, the rope must be quite short; in fact,
 ...
 .H. (H covers T)
 ...
+```
 If the head is ever two steps directly up, down, left, or right from the tail, the tail must also move one step in that direction so it remains close enough:
 
+```
 .....    .....    .....
 .TH.. -> .T.H. -> ..TH.
 .....    .....    .....
@@ -34,8 +37,11 @@ If the head is ever two steps directly up, down, left, or right from the tail, t
 .H. -> ... -> .T.
 ...    .H.    .H.
 ...    ...    ...
+
+```
 Otherwise, if the head and tail aren't touching and aren't in the same row or column, the tail always moves one step diagonally to keep up:
 
+```
 .....    .....    .....
 .....    ..H..    ..H..
 ..H.. -> ..... -> ..T..
@@ -47,10 +53,12 @@ Otherwise, if the head and tail aren't touching and aren't in the same row or co
 ..H.. -> ...H. -> ..TH.
 .T...    .T...    .....
 .....    .....    .....
+```
 You just need to work out where the tail goes as the head follows a series of motions. Assume the head and the tail both start at the same position, overlapping.
 
 For example:
 
+```
 R 4
 U 4
 L 3
@@ -59,8 +67,10 @@ R 4
 D 1
 L 5
 R 2
+```
 This series of motions moves the head right four steps, then up four steps, then left three steps, then down one step, and so on. After each step, you'll need to update the position of the tail if the step means the head is no longer adjacent to the tail. Visually, these motions occur as follows (s marks the starting position as a reference point):
 
+```
 == Initial State ==
 
 ......
@@ -228,13 +238,18 @@ s.....
 .TH...
 ......
 s.....
+
+```
 After simulating the rope, you can count up all of the positions the tail visited at least once. In this diagram, s again marks the starting position (which the tail also visited) and # marks other positions the tail visited:
 
+```
 ..##..
 ...##.
 .####.
 ....#.
 s###..
+```
+
 So, there are 13 positions the tail visited at least once.
 
 Simulate your complete hypothetical series of motions. How many positions does the tail of the rope visit at least once?
