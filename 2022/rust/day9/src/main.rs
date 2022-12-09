@@ -51,9 +51,7 @@ fn get_tail_movement(hm: &Vec<(i32, i32)>) -> Vec<(i32, i32)> {
         let dx = hx - x;
         let dy = hy - y;
 
-        if (dx).abs() < 2 && (dy).abs() < 2 {
-            // Nothing to do
-        } else {
+        if (dx).abs() >= 2 || (dy).abs() >= 2 {
             x += (dx).signum();
             y += (dy).signum();
         }
@@ -102,8 +100,9 @@ mod tests {
         let v: Vec<String> = utils::test_input_to_vec(raw_string, true);
         assert_ne!(0, v.len());
         let hm = get_head_movement(&v);
+
         // Part 2
-        {
+        if true {
             let mut tails: Vec<Vec<(i32, i32)>> = Vec::new();
             let num_knots = 10;
             for i in 0..(num_knots - 1) {
@@ -114,35 +113,6 @@ mod tests {
                 };
                 let tm = get_tail_movement(&my_head);
                 tails.push(tm);
-            }
-
-            // Now show this.
-            for time in 0..hm.len() {
-                let mut matrix: [[char; 25]; 25] = [['.'; 25]; 25];
-                // Go through each tail, choosing this timestamp
-                for _tail_idx in 0..(num_knots) {
-                    let tail_idx = num_knots - 1 - _tail_idx;
-                    // If it is 0, then use the head, otherwise use the correct tail.
-                    let points_vec_to_show = if tail_idx == 0 {
-                        hm.clone()
-                    } else {
-                        tails[tail_idx - 1].clone()
-                    };
-                    // from this tail, show this timestamp
-                    let (x, y) = points_vec_to_show[time];
-                    // Update matrix
-                    if x >= 0 && x < 25 && y >= 0 && y < 25 {
-                        let char_to_show = if tail_idx == 0 {
-                            'H'
-                        } else {
-                            (tail_idx).to_string().chars().nth(0).unwrap()
-                        };
-                        matrix[(24 - y) as usize][x as usize] = char_to_show;
-                    }
-                    // For breakpoint
-                    print!("{}", 0);
-                }
-                print!("{}", 0);
             }
 
             let mut unique_tm = tails[tails.len() - 1].clone();
@@ -186,7 +156,7 @@ fn main() -> io::Result<()> {
     }
 
     // Part 2
-    {
+    if true {
         let mut tails: Vec<Vec<(i32, i32)>> = Vec::new();
         let num_knots = 10;
         for i in 0..(num_knots - 1) {
