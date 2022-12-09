@@ -3,7 +3,12 @@ use std::{io::{self}, collections::{VecDeque, HashMap}};
 mod utils;
 
 
-
+#[allow(dead_code)]
+fn remove_parent_path_from_pwd(up_path: String, pwd: &String)->String {
+    let up_len = up_path.len();
+    let new_pwd = &pwd.to_string()[0..(pwd.len()-up_len)];
+    return new_pwd.to_string();
+}
 
 // Note...
 // https://stackoverflow.com/questions/36167160/how-do-i-express-mutually-recursive-data-structures-in-safe-rust?noredirect=1&lq=1
@@ -26,9 +31,7 @@ fn parse_directories(v: Vec<String>)->HashMap<String, usize> {
                 println!("\tcd {}", words[2]);
                 if ".." == words[2]{
                     let up_path = paths.pop_back().unwrap();
-                    let up_len = up_path.len();                        
-                    let new_pwd = &pwd.to_string()[0..(pwd.len()-up_len)];
-                    pwd = new_pwd.to_string();
+                    pwd = remove_parent_path_from_pwd(up_path, &pwd);
                     println!("\tCurrent path is {}", pwd );
                 }                    
                 else {
@@ -60,12 +63,15 @@ fn parse_directories(v: Vec<String>)->HashMap<String, usize> {
                     println!("\tfilesize {}",filesize);
                     // Check which top directory we are in, and push to there.
                     if paths.len() >= 1 {
+                        let mut tmp_path:String = String::new();
                         for i in 0..paths.len() {
                             let parent_dir = paths[i].clone();
-                            let curr_size_opt = top_dir_sizes.get(&parent_dir);
+                            tmp_path.push_str("/");
+                            tmp_path.push_str(&parent_dir.clone());
+                            let curr_size_opt = top_dir_sizes.get(&tmp_path);
                             let curr_size = if curr_size_opt == None { 0 as usize } else { *curr_size_opt.unwrap() };
                             let entry = curr_size + filesize;
-                            top_dir_sizes.insert(parent_dir, entry);
+                            top_dir_sizes.insert(tmp_path.clone(), entry);
                         }
                     }
                     else {
@@ -80,6 +86,8 @@ fn parse_directories(v: Vec<String>)->HashMap<String, usize> {
     return top_dir_sizes;
 
 }
+
+
 
 
 
@@ -146,7 +154,7 @@ mod tests {
 fn main()  -> io::Result<()> {
     use std::io::BufRead;
 
-    let filename = std::env::args().nth(1).expect("Expected filename");
+    let filename = if std::env::args().len() >= 2 { std::env::args().nth(1).unwrap() } else { String::from("input.txt")};
     let file = std::io::BufReader::new(
         std::fs::File::open(<String as AsRef<std::path::Path>>::as_ref(
             &filename,
