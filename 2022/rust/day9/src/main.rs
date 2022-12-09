@@ -1,114 +1,138 @@
-use std::{
-    cmp,
-    collections::{HashMap, VecDeque},
-    io::{self},
-};
+use std::{ cmp, collections::{ HashMap, VecDeque }, io::{ self } };
 mod utils;
 
-fn get_play_area(v:&Vec<String>)->(i32,i32){
-    let mut w = 0;
-    let mut h = 0;
+#[allow(dead_code)]
+fn get_head_movement(v: &Vec<String>) -> Vec<(i32, i32)> {
     let mut x = 0;
     let mut y = 0;
+    let mut head_movement: Vec<(i32, i32)> = Vec::new();
+    head_movement.push((x, y));
+    for nl in v {
+        let words: Vec<&str> = nl.split_whitespace().collect();
+        if words.len() == 0 {
+            break;
+        }
+        let dir = words[0];
+        let mut xdir = 0;
+        let mut ydir = 0;
+        match dir.chars().nth(0).unwrap() {
+            'R' => {
+                xdir = 1;
+            }
+            'L' => {
+                xdir = -1;
+            }
+            'U' => {
+                ydir = 1;
+            }
+            _ => {
+                ydir = -1;
+            }
+        }
+        let spaces = words[1].parse::<i32>().unwrap();
+        for _i in 0..spaces {
+            x += xdir;
+            y += ydir;
+            head_movement.push((x, y));
+        }
+    }
+    return head_movement;
+}
+
+#[allow(dead_code)]
+fn get_tail_movement(hm: &Vec<(i32, i32)>) -> Vec<(i32, i32)> {
+    let mut tail_movement: Vec<(i32, i32)> = Vec::new();
+    let mut x = 0;
+    let mut y = 0;
+    tail_movement.push((x, y));
+    for head in hm {
+        let (hx, hy) = head.clone();
+        let dx = hx - x;
+        let dy = hy - y;
+        if dy >= 2 {
+            y = hy - 1;
+            x = hx;
+        } else if dy <= -2 {
+            y = hy + 1;
+            x = hx;
+        } else if dx >= 2 {
+            x = hx - 1;
+            y = hy;
+        } else if dx <= -2 {
+            x = hx + 1;
+            y = hy;
+        }
+
+        draw_it((5, 5), head.clone(), (x, y));
+
+        tail_movement.push((x, y));
+    }
+    return tail_movement;
+}
+
+#[allow(dead_code)]
+fn get_play_area(v: &Vec<String>) -> (i32, i32) {
     let mut min_x = 0;
     let mut max_x = 0;
     let mut min_y = 0;
     let mut max_y = 0;
-    for nl in v {
-        let words:Vec<&str> = nl.split_whitespace().collect();
-        if words.len() == 0 { break; }
-        let dir = words[0];
-        let mut xdir = 0;
-        let mut ydir = 0;
-        match dir.chars().nth(0).unwrap() {
-            'R' => {
-                xdir = 1;
-            },
-            'L' => {
-                xdir = -1;
-            },
-            'U' => {
-                ydir = 1;
-            },
-            _ => {
-                ydir = -1;
-            }
-        }
-        let spaces = words[1].parse::<i32>().unwrap();
-        x += xdir * spaces;
-        y += ydir * spaces;
+    let hm = get_head_movement(v);
+    for (x, y) in hm {
         min_x = cmp::min(min_x, x);
         max_x = cmp::max(max_x, x);
         min_y = cmp::min(min_y, y);
-        max_y = cmp::max(max_y, y);        
-
+        max_y = cmp::max(max_y, y);
     }
-    w = max_x - min_x;
-    h = max_y - min_y;
-    return (w,h);
-
+    let w = max_x - min_x + 1;
+    let h = max_y - min_y + 1;
+    return (w, h);
 }
-
-
-fn get_head_movement(v:&Vec<String>)->Vec<(i32, i32)>{
-    let mut x = 0;
-    let mut y = 0;
-    let mut head_movement: Vec<(i32, i32)> = Vec::new();
-    for nl in v {
-        let words:Vec<&str> = nl.split_whitespace().collect();
-        if words.len() == 0 { break; }
-        let dir = words[0];
-        let mut xdir = 0;
-        let mut ydir = 0;
-        match dir.chars().nth(0).unwrap() {
-            'R' => {
-                xdir = 1;
-            },
-            'L' => {
-                xdir = -1;
-            },
-            'U' => {
-                ydir = 1;
-            },
-            _ => {
-                ydir = -1;
+#[allow(dead_code)]
+fn draw_it(wh: (i32, i32), xy: (i32, i32), txy: (i32, i32)) {
+    let (w, h) = wh;
+    let (x, y) = xy;
+    let (tx, ty) = txy;
+    println!("for x,y:{},{}", xy.0, xy.1);
+    for __y in 0..h {
+        let _y = h - 1 - __y;
+        let mut xystr: String = String::new();
+        for _x in 0..w {
+            let mut ch: String = String::from(".");
+            if _x == x && _y == y {
+                ch = String::from("H");
+            } else if _x == tx && _y == ty {
+                ch = String::from("T");
             }
+            xystr.push_str(&ch);
         }
-        let spaces = words[1].parse::<i32>().unwrap();
-        x += xdir * spaces;
-        y += ydir * spaces;
-        head_movement.push((x,y));
+        println!("{}", xystr);
     }
-    return head_movement;
-
 }
 
 #[cfg(test)]
 mod tests {
-
     // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;
 
     #[test]
     fn scenic_test() {
-        let raw_string: String = "R 4
+        let raw_string: String =
+            "R 4
             U 4
             L 3
             D 1
             R 4
             D 1
             L 5
-            R 2"
-            .to_string();
+            R 2".to_string();
         let v: Vec<String> = utils::test_input_to_vec(raw_string, true);
         assert_ne!(0, v.len());
-        
+        let wh = get_play_area(&v);
         let hm = get_head_movement(&v);
-
-        let (w,h) = get_play_area(&v);
-
+        for head in hm {
+            draw_it(wh, head, (0, 0));
+        }
     }
-    
 }
 
 fn main() -> io::Result<()> {
@@ -120,7 +144,7 @@ fn main() -> io::Result<()> {
         String::from("input.txt")
     };
     let file = std::io::BufReader::new(
-        std::fs::File::open(<String as AsRef<std::path::Path>>::as_ref(&filename)).unwrap(),
+        std::fs::File::open(<String as AsRef<std::path::Path>>::as_ref(&filename)).unwrap()
     );
     let mut v: Vec<String> = Vec::new();
     for (_, line) in file.lines().enumerate() {
@@ -128,8 +152,8 @@ fn main() -> io::Result<()> {
         v.push(l);
     }
     assert_ne!(0, v.len());
-        
-    let (w,h) = get_play_area(&v);
+
+    let (w, h) = get_play_area(&v);
     println!("Play area = {}x{}", w, h);
     Ok(())
 }
