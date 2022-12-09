@@ -233,9 +233,6 @@ fn get_visible_trees_for_dir_y(
     }
 }
 
-
-
-
 #[cfg(test)]
 mod tests {
 
