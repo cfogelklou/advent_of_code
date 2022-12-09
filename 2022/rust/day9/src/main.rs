@@ -47,6 +47,10 @@ fn get_tail_movement(hm: &Vec<(i32, i32)>) -> Vec<(i32, i32)> {
     tail_movement.push((x, y));
     for head in hm {
         let (hx, hy) = head.clone();
+
+        println!("before moving tail");
+        draw_it((5, 5), head.clone(), (x, y));
+
         let dx = hx - x;
         let dy = hy - y;
         if dy >= 2 {
@@ -63,6 +67,7 @@ fn get_tail_movement(hm: &Vec<(i32, i32)>) -> Vec<(i32, i32)> {
             y = hy;
         }
 
+        println!("after moving tail");
         draw_it((5, 5), head.clone(), (x, y));
 
         tail_movement.push((x, y));
@@ -109,6 +114,15 @@ fn draw_it(wh: (i32, i32), xy: (i32, i32), txy: (i32, i32)) {
     }
 }
 
+#[allow(dead_code)]
+fn get_hash_value_for_tree(x: i32, y: i32) -> String {
+    let mut h: String;
+    h = x.to_string();
+    h.push_str(",");
+    h.push_str(&y.to_string());
+    return h;
+}
+
 #[cfg(test)]
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
@@ -127,11 +141,12 @@ mod tests {
             R 2".to_string();
         let v: Vec<String> = utils::test_input_to_vec(raw_string, true);
         assert_ne!(0, v.len());
-        let wh = get_play_area(&v);
         let hm = get_head_movement(&v);
-        for head in hm {
-            draw_it(wh, head, (0, 0));
-        }
+        let tm = get_tail_movement(&hm);
+        let mut unique_tm = tm.clone();
+        unique_tm.sort();
+        unique_tm.dedup();
+        assert_eq!(13, unique_tm.len());
     }
 }
 
@@ -153,7 +168,12 @@ fn main() -> io::Result<()> {
     }
     assert_ne!(0, v.len());
 
-    let (w, h) = get_play_area(&v);
-    println!("Play area = {}x{}", w, h);
+    let hm = get_head_movement(&v);
+    let tm = get_tail_movement(&hm);
+    let mut unique_tm = tm.clone();
+    unique_tm.sort();
+    unique_tm.dedup();
+    //assert_eq!(13, unique_tm.len());
+    println!("Unique tail positions: {}", unique_tm.len());
     Ok(())
 }
