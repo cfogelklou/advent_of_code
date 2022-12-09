@@ -1,5 +1,5 @@
 
-use std::{io::{self}, collections::{VecDeque, HashMap}};
+use std::{io::{self}, collections::{VecDeque, HashMap}, cmp};
 mod utils;
 
 
@@ -110,8 +110,91 @@ fn parse_directories(v: Vec<String>)->(HashMap<String, usize>, usize) {
 }
 
 
+
+#[allow(dead_code)]
+fn get_w_h(v: Vec<String>)->(i32, i32) {
+    let mut w: i32 = 1000;
+    let mut h: i32 = 0;
+    for next_line in v {
+        let t = next_line.trim();
+        if t.len() > 0 {
+            w = cmp::min(w, t.len() as i32);
+            h += 1;
+        }
+    }   
+    return (w, h);
+}
+
+#[allow(dead_code)]
+fn get_char_as_int(c:char) -> i32 {
+    let cc = c as i32;
+    let aa = '0' as i32;
+    return if c >= '0' && c <= '9' { cc - aa } else { 0 }
+}
+
+#[allow(dead_code)]
+fn get_2dvec(v: Vec<String>)->Vec<Vec<i32>> {
+    let mut yvec:Vec<Vec<i32>> = Vec::new();
+    for next_line in v {
+        let t = next_line.trim();
+        if t.len() > 0 {
+            let xvec:Vec<i32> = next_line.chars().map(|x| { return get_char_as_int(x) } ).into_iter().collect();
+            yvec.push(xvec);
+
+        }
+    }   
+    return yvec;
+}
+
+#[allow(dead_code)]
+fn get_hash_value_for_tree(x:i32, y:i32)->usize {
+    return (x as usize) * 16384 + (y as usize);
+}
+
+#[allow(dead_code)]
+fn get_tree_height(vec2d: Vec<Vec<i32>>, x:i32, y:i32)->i32 {    
+    let xvec = vec2d.get(y as usize).unwrap();
+    let tree_height = xvec.get(x as usize).unwrap().clone();
+    return tree_height;
+}
+
+#[allow(dead_code)]
+fn get_visible_trees_for_dir(wh:(i32,i32), forward_x:bool, forward_y: bool, vec2d: Vec<Vec<i32>>, visible_trees: &mut Vec<usize>) {
+    
+    println!("get_visible_trees_for_dir:: forward_x: {} forward_y:{}", forward_x, forward_y);
+    let (w,h) = wh;
+    let mut yvec = vec2d.clone();
+    if !forward_y {
+        yvec.reverse();
+    }
+
+    for y in 0..h {
+        let mut min_tree_height = 0;
+        let mut xvec = yvec.get(y as usize).unwrap().clone();
+        if !forward_x {
+            xvec.reverse();
+        }
+        let mut dbg:String = String::from("");
+        let mut pushed_trees = 0;
+        for x in 0..w {
+            let tree_height = xvec.get(x as usize).unwrap().clone();
+            dbg.push_str(&tree_height.to_string());
+            if tree_height > min_tree_height {
+                min_tree_height = tree_height;
+                let h = get_hash_value_for_tree(x, y);
+                visible_trees.push(h);
+                pushed_trees += 1;
+            }
+        }
+        println!("Got heights {}, and pushed {}", dbg, pushed_trees);
+        println!("");
+    }
+}
+
 #[cfg(test)]
 mod tests {
+
+    use core::num;
 
     // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;
@@ -127,6 +210,22 @@ mod tests {
             
         let v: Vec<String> = utils::test_input_to_vec(raw_string, true);
         assert_ne!(0, v.len());
+        let (w, h) = get_w_h(v.clone());
+        assert_eq!(w, 5);
+        assert_eq!(h, 5);
+        let vec2d = get_2dvec(v);
+        let mut visible_trees:Vec<usize> = Vec::new();
+
+        get_visible_trees_for_dir((w,h), true, true, vec2d.clone(), &mut visible_trees);
+        get_visible_trees_for_dir((w,h), true, false, vec2d.clone(), &mut visible_trees);
+        get_visible_trees_for_dir((w,h), false, false, vec2d.clone(), &mut visible_trees);
+        get_visible_trees_for_dir((w,h), false, true, vec2d.clone(), &mut visible_trees);
+
+        visible_trees.sort();
+        visible_trees.dedup();
+        let num_visible_trees = visible_trees.len();
+        println!("Number of visible trees is {}", num_visible_trees);
+        assert_eq!(num_visible_trees, 21);
 
         /*
         We have sides l, t, r, b
@@ -155,6 +254,8 @@ mod tests {
 
 
     }
+
+
 
 
 
