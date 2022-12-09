@@ -245,7 +245,7 @@ fn main() -> io::Result<()> {
         let mut unique_tm = tails[tails.len() - 1].clone();
         unique_tm.sort();
         unique_tm.dedup();
-        //assert_eq!(13, unique_tm.len());
+        assert_eq!(2562, unique_tm.len());
         println!("Unique tail positions for part 2: {}", unique_tm.len());
     }
 
