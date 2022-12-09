@@ -121,36 +121,18 @@ mod tests {
     use super::*;
  
     #[test]
-    fn crates_check_0() {
+    fn trees_test() {
         
-        let raw_string: String = "$ cd /
-        $ ls
-        dir apath
-        14848514 b.txt
-        8504156 c.dat
-        dir dpath
-        $ cd apath
-        $ ls
-        dir epath
-        29116 f
-        2557 g
-        62596 h.lst
-        $ cd epath
-        $ ls
-        584 i
-        $ cd ..
-        $ cd ..
-        $ cd dpath
-        $ ls
-        4060174 j
-        8033020 d.log
-        5626152 d.ext
-        7214296 k".to_string();
+        let raw_string: String = "30373
+        25512
+        65332
+        33549
+        35390".to_string();
             
         let v: Vec<String> = utils::test_input_to_vec(raw_string, true);
         assert_ne!(0, v.len());
 
-
+        /* 
         let (top_dir_sizes, total_sz): (HashMap<String, usize>, usize) = parse_directories(v);
         let mut sum_of_most_100000:usize = 0;
         let _dirs_at_most_100000:Vec<(String, usize)> = top_dir_sizes.clone().into_iter().filter(|(_n,s)|{
@@ -166,6 +148,7 @@ mod tests {
         assert_eq!(48381165, total_sz);
         let smallest_dir = find_dirs_to_delete(total_sz, top_dir_sizes);
         assert_eq!(smallest_dir.1, 24933642 as usize);
+        */
 
 
     }
