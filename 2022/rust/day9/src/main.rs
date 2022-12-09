@@ -39,7 +39,6 @@ fn get_head_movement(v: &Vec<String>) -> Vec<(i32, i32)> {
     return head_movement;
 }
 
-
 // Generates a vector that follows the head vector.
 #[allow(dead_code)]
 fn get_tail_movement(hm: &Vec<(i32, i32)>) -> Vec<(i32, i32)> {
@@ -50,22 +49,18 @@ fn get_tail_movement(hm: &Vec<(i32, i32)>) -> Vec<(i32, i32)> {
         let (hx, hy) = head.clone();
 
         let dx = hx - x;
-        let dy =  hy - y;
+        let dy = hy - y;
 
         if (dx).abs() < 2 && (dy).abs() < 2 {
             // Nothing to do
-        }
-        else {
+        } else {
             x += (dx).signum();
             y += (dy).signum();
- 
         }
         tail_movement.push((x, y));
-
     }
     return tail_movement;
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -137,9 +132,12 @@ mod tests {
                     let (x, y) = points_vec_to_show[time];
                     // Update matrix
                     if x >= 0 && x < 25 && y >= 0 && y < 25 {
-                        let char_to_show = if tail_idx == 0 { 'H' } else {(tail_idx).to_string().chars().nth(0).unwrap()}; 
+                        let char_to_show = if tail_idx == 0 {
+                            'H'
+                        } else {
+                            (tail_idx).to_string().chars().nth(0).unwrap()
+                        };
                         matrix[(24 - y) as usize][x as usize] = char_to_show;
-                            
                     }
                     // For breakpoint
                     print!("{}", 0);
@@ -183,7 +181,7 @@ fn main() -> io::Result<()> {
         let mut unique_tm = tm.clone();
         unique_tm.sort();
         unique_tm.dedup();
-        //assert_eq!(13, unique_tm.len());
+        assert_eq!(6197, unique_tm.len());
         println!("Unique tail positions: {}", unique_tm.len());
     }
 
