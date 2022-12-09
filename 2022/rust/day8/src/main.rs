@@ -132,6 +132,13 @@ mod tests {
         let v: Vec<String> = utils::test_input_to_vec(raw_string, true);
         assert_ne!(0, v.len());
 
+        /*
+        We have sides l, t, r, b
+        Visible trees have height that is > previous height
+        Visible trees map has entries stored at "x,y", to prevent duplicates.
+        We don't need to store in vectors. lines are y and character index is x.
+        But, maybe we should...?
+        */
         /* 
         let (top_dir_sizes, total_sz): (HashMap<String, usize>, usize) = parse_directories(v);
         let mut sum_of_most_100000:usize = 0;
