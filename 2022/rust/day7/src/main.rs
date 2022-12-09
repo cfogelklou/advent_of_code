@@ -1,34 +1,53 @@
 
-use std::{io::{self}, collections::{VecDeque, HashMap}};
+use std::{io::{self}, collections::{VecDeque, HashMap}, cmp};
 mod utils;
 
 
 #[allow(dead_code)]
 fn remove_parent_path_from_pwd(up_path: String, pwd: &String)->String {
-    let up_len = up_path.len();
+    let up_len = cmp::min(pwd.len(), up_path.len());
     let new_pwd = &pwd.to_string()[0..(pwd.len()-up_len)];
-    return new_pwd.to_string();
+    return String::from(new_pwd);
 }
 
 #[allow(dead_code)]
 fn find_dirs_to_delete(total_sz: usize, top_dir_sizes: HashMap<String, usize>)->(String, usize) {
+    // The ssd has a total size of 70000000
+    // We need 30000000.
+    // Calculate how much needs to be freed
     let space_available = 70000000 - total_sz as i32;
     let space_to_free = 30000000 - space_available;
-    let mut first_dir: (String, usize) = ("".to_string(), 0);
+
+    let mut first_dir: (String, usize) = ("".to_string(), 0); // Default value of the first smallest directory
     if space_to_free > 0 {
+        // Get a list of directories that, if deleted, would free up enough space.
         let mut dirs_ge_space_to_free:Vec<(String, usize)> = top_dir_sizes.clone().into_iter().filter(|(_n,s)|{
             return *s >= space_to_free as usize;            
         }).collect();
+
+        // Sort the list smallest to largest.
         dirs_ge_space_to_free.sort_by(|a, b| {
             let first:i32 = a.1 as i32;
             let second:i32 = b.1 as i32;
             return first.cmp(&second);
         });
+
+        // First entry is the correct entry
         if dirs_ge_space_to_free.len() >= 1 {
-            first_dir = dirs_ge_space_to_free.get(0).unwrap().clone();        
+            first_dir = dirs_ge_space_to_free.get(0).unwrap().clone();
         }
     }
     return first_dir;
+}
+
+// tmp_path is basically a copy of the pwd variable used while adding a found file.
+fn add_size_to_parent_dir(tmp_pwd_path: &mut String, parent_dir: String, top_dir_sizes: &mut HashMap<String, usize>, filesize: usize) {
+    tmp_pwd_path.push_str("/");
+    tmp_pwd_path.push_str(&parent_dir.clone());
+    let curr_size_opt = top_dir_sizes.get(&*tmp_pwd_path);
+    let curr_size = if curr_size_opt == None { 0 as usize } else { *curr_size_opt.unwrap() };
+    let entry = curr_size + filesize;
+    top_dir_sizes.insert(tmp_pwd_path.clone(), entry);
 }
 
 // Note...
@@ -37,9 +56,9 @@ fn find_dirs_to_delete(total_sz: usize, top_dir_sizes: HashMap<String, usize>)->
 fn parse_directories(v: Vec<String>)->(HashMap<String, usize>, usize) {
     let mut line_cnt = 0;
     let mut pwd: String = String::from("");
-    let mut paths: VecDeque<String> = VecDeque::new();
-    let mut top_dir_sizes:HashMap<String, usize> = HashMap::new();
-    let mut total_used:usize = 0;
+    let mut paths_stack: VecDeque<String> = VecDeque::new();
+    let mut top_dir_size_map:HashMap<String, usize> = HashMap::new();
+    let mut total_space_used:usize = 0;
 
     for next_line in v {
         line_cnt += 1;
@@ -51,21 +70,22 @@ fn parse_directories(v: Vec<String>)->(HashMap<String, usize>, usize) {
             if "cd" == words[1]{
                 println!("\tcd {}", words[2]);
                 if ".." == words[2]{
-                    let up_path = paths.pop_back().unwrap();
-                    pwd = remove_parent_path_from_pwd(up_path, &pwd);
+                    // Going up... Pop the stack and update path with the popped parent directory.
+                    let old_parent_path = paths_stack.pop_back().unwrap();
+                    pwd = remove_parent_path_from_pwd(old_parent_path, &pwd);
                     println!("\tCurrent path is {}", pwd );
                 }                    
                 else {
                     if words[2] == "/" {
-                        // Went to root
-                        paths.clear();
+                        // Went to root. Update paths_stack to reset it and reset pwd.
+                        paths_stack.clear();
                         pwd = String::from("");
                     }
                     else {
-                        // Went into a path
+                        // Went into a path, push it onto the paths stack and update pwd.
                         let mut new_path: String = String::from("/");
                         new_path.push_str(words[2].clone());                            
-                        paths.push_back(new_path.clone());
+                        paths_stack.push_back(new_path.clone());
                         pwd.push_str(&new_path.clone());
                     }
                     println!("\tCurrent path is {}", pwd );
@@ -82,18 +102,13 @@ fn parse_directories(v: Vec<String>)->(HashMap<String, usize>, usize) {
                 let filesize = words[0].parse::<i32>().unwrap() as usize;
                 if 0 != filesize {
                     println!("\tfilesize {}",filesize);
-                    total_used += filesize;
+                    total_space_used += filesize;
+                    let mut tmp_path:String = String::new();
                     // Check which top directory we are in, and push to there.
-                    if paths.len() >= 1 {
-                        let mut tmp_path:String = String::new();
-                        for i in 0..paths.len() {
-                            let parent_dir = paths[i].clone();
-                            tmp_path.push_str("/");
-                            tmp_path.push_str(&parent_dir.clone());
-                            let curr_size_opt = top_dir_sizes.get(&tmp_path);
-                            let curr_size = if curr_size_opt == None { 0 as usize } else { *curr_size_opt.unwrap() };
-                            let entry = curr_size + filesize;
-                            top_dir_sizes.insert(tmp_path.clone(), entry);
+                    if paths_stack.len() >= 1 {                        
+                        // For each path in the paths stack, add this file to the size.
+                        for i in 0..paths_stack.len() {
+                            add_size_to_parent_dir(&mut tmp_path, paths_stack[i].clone(), &mut top_dir_size_map, filesize);
                         }
                     }
                     else {
@@ -105,7 +120,7 @@ fn parse_directories(v: Vec<String>)->(HashMap<String, usize>, usize) {
         }
     }
 
-    return (top_dir_sizes, total_used);
+    return (top_dir_size_map, total_space_used);
 
 }
 
