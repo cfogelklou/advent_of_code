@@ -3,77 +3,6 @@ use std::{io::{self}, collections::{VecDeque}, cmp};
 
 mod utils;
 
-#[allow(dead_code)]
-fn split_into_tuples(s:String) -> ((i32, i32), (i32, i32)){
-    
-    let two_pairs:Vec<&str> = s.trim().split(",").collect();
-    let mut range_tuples:Vec<(i32,i32)> = Vec::new();
-    for p in two_pairs {
-        let start_end:Vec<&str> = p.split("-").collect();
-        let start = start_end[0].parse::<i32>().unwrap();
-        let end = start_end[1].parse::<i32>().unwrap();
-        range_tuples.push((start, end));
-    }
-
-    return (range_tuples[0],range_tuples[1]);
-}
-
-#[allow(dead_code)]
-fn is_range_contained(a:(i32,i32), b:(i32,i32)) -> bool {
-    return  b.0 >= a.0 && b.1 <= a.1;
-}
-
-#[allow(dead_code)]
-fn complete_containment(a:(i32,i32), b:(i32,i32)) -> bool {
-    return is_range_contained(a, b) || is_range_contained(b, a);
-}
-
-
-// For part 1, split the rucksacks into two groups and get the score.
-#[allow(dead_code)]
-fn how_many_assignments_is_one_contained_in_the_other(v:Vec<String>)->i32{   
-    
-    let mut total: i32 = 0;
-    for next_line in v.iter() {
-        let partners: ((i32, i32), (i32, i32)) = split_into_tuples(next_line.clone());
-        if complete_containment(partners.0, partners.1) {
-            total += 1;
-        }
-    }
-
-    return total;
-}
-
-#[allow(dead_code)]
-fn partial_containment(a:(i32,i32), b:(i32,i32)) -> bool {
-    // I'm too tired to think, so using a method that is guaranteed to work rather than a potentially simpler comparison
-    let mut overlap = false;
-    let mut a_sections:Vec<i32> = Vec::new();
-    for i in a.0..(a.1+1) {
-        a_sections.push(i);
-    }
-    for i in b.0..(b.1+1) {
-        overlap = overlap || a_sections.contains(&i);
-    }
-
-    return overlap;
-}
-
-// For part 2, Check if there is any overlap
-#[allow(dead_code)]
-fn how_many_assignments_is_there_any_overlap(v:Vec<String>)->i32{   
-    
-    let mut total: i32 = 0;
-    for next_line in v.iter() {
-        let partners: ((i32, i32), (i32, i32)) = split_into_tuples(next_line.clone());
-        if partial_containment(partners.0, partners.1) {
-            total += 1;
-        }
-    }
-
-    return total;
-}
-
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 enum TypeOfLine {
     Crate = 0,
@@ -95,7 +24,6 @@ fn get_type_of_line(s_in:String) -> TypeOfLine {
     }
     return t;
 }
-
 
 
 #[allow(dead_code)]
