@@ -29,7 +29,9 @@ jobs:
 
       - name: Prepare secrets
         working-directory: 2022/rust
-        run: ./extract_secrets.sh
+        run: |
+          $pwd
+          bash extract_secrets.sh
 
       - name: Rust & Cargo - AoC 2022 day 1
         working-directory: 2022/rust/day1
