@@ -14,7 +14,11 @@ for f in `find ./ -name "input.txt"`
 do
     DIR="$(dirname "${f}")" ; 
     cd ${DIR}
-    7z a input.7z input.txt -p${INPUT_7Z_PASSWORD}
+    if test -f "input.7z"; then
+        echo "${DIR}/input.7z exists."
+    else
+        7z a input.7z input.txt -p${INPUT_7Z_PASSWORD}
+    fi
     cd ..
 
 done

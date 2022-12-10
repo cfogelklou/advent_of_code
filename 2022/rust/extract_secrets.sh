@@ -13,6 +13,6 @@ for f in `find ./ -name "input.7z"`
 do
     DIR="$(dirname "${f}")"
     cd ${DIR}
-    7z x input.7z -p${INPUT_7Z_PASSWORD}
+    7z x input.7z -p${INPUT_7Z_PASSWORD} -aoa
     cd ..
 done
