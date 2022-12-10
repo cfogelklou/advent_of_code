@@ -57,12 +57,12 @@ impl Cpu {
         return if ticks < self.hist_after.len() { self.hist_after[ticks - 1] } else { 0 };
     }
 
-    fn get_signal_strengths(&self, ticks:usize) -> (i32, i64) {
-        let mut ss:i32 = 0;
-        let mut ss_sum:i64 = 0;
-        if (ticks >= self.hist_before.len()){
+    fn get_signal_strengths(&self, ticks: usize) -> (i32, i64) {
+        let mut ss: i32 = 0;
+        let mut ss_sum: i64 = 0;
+        if ticks >= self.hist_before.len() {
             return (ss, ss_sum);
-        }        
+        }
         if ticks < 20 {
             return (ss, ss_sum);
         }
@@ -70,7 +70,7 @@ impl Cpu {
         while idx <= ticks {
             let x = self.get_x_before(idx);
             ss = x * (idx as i32);
-            ss_sum += (ss as i64);
+            ss_sum += ss as i64;
             idx += 40;
         }
 
@@ -290,7 +290,7 @@ mod tests {
         }
         // One more exec
         cpu.exec(Instructions::Noop);
-                
+
         assert_eq!(cpu.hist_before[20 - 1], 21);
         assert_eq!(cpu.get_x_before(20), 21);
         {
@@ -304,7 +304,6 @@ mod tests {
             let (ss, _ss_sum) = cpu.get_signal_strengths(60);
             assert_eq!(ss, 1140);
         }
-
 
         assert_eq!(cpu.hist_before[100 - 1], 18);
         assert_eq!(cpu.get_x_before(100), 18);
@@ -342,6 +341,35 @@ mod tests {
         // During the 140th cycle, register X has the value 21, so the signal strength is 140 * 21 = 2940.
         // During the 180th cycle, register X has the value 16, so the signal strength is 180 * 16 = 2880.
         // During the 220th cycle, register X has the value 18, so the signal strength is 220 * 18 = 3960.
+        const H: usize = 6;
+        const W: usize = 40;
+        let mut matrix: [[char; W]; 6] = [['.'; W]; 6];
+        for y in 0..H {
+            for x in 0..W {
+                let t = y * W + x;
+                let pixel_center = cpu.get_x_before(t + 1);
+                let mut sprite_position: String = String::new();
+                for _p in 0..W {
+                    let p = _p as i32;
+                    let ch = if p >= pixel_center - 1 && p <= pixel_center + 1 { "#" } else { "." };
+                    sprite_position.push_str(&ch);
+                }
+                println!("Sprite position: {}", sprite_position);
+                let ch = sprite_position.chars().nth(x).unwrap();
+                matrix[y][x] = ch;
+            }
+        }
+        println!("matrix");
+        for y in 0..H {
+            let mut sprite_position: String = String::new();
+            for x in 0..W {
+                let ch = String::from(matrix[y][x]);
+                sprite_position.push_str(&ch);
+            }
+            println!("{}", sprite_position);
+        }        
+        println!("");
+        println!("done");
     }
 }
 
@@ -363,40 +391,52 @@ fn main() -> io::Result<()> {
     }
     assert_ne!(0, v.len());
 
-    /*
-    let hm = get_head_movement(&v);
-    assert_ne!(0, v.len());
-
-    // Part 1
-    if true {
-        let tm = get_tail_movement(&hm);
-        let mut unique_tm = tm.clone();
-        unique_tm.sort();
-        unique_tm.dedup();
-        assert_eq!(6197, unique_tm.len());
-        println!("Unique tail positions: {}", unique_tm.len());
-    }
-
-    // Part 2
-    if true {
-        let mut tails: Vec<Vec<(i32, i32)>> = Vec::new();
-        let num_knots = 10;
-        for i in 0..(num_knots - 1) {
-            let my_head = if i == 0 {
-                hm.clone()
-            } else {
-                tails[i - 1].clone()
-            };
-            let tm = get_tail_movement(&my_head);
-            tails.push(tm);
+    let mut cpu = Cpu::new();
+    for line in v {
+        let words: Vec<&str> = line.split_whitespace().clone().collect();
+        let mut action = Instructions::Noop;
+        let mut x: i32 = 0;
+        if words[0] == "addx" {
+            x = words[1].parse::<i32>().unwrap();
+            action = Instructions::AddX(x.clone());
         }
+        cpu.exec(action);
+    }
+    // One more exec
+    cpu.exec(Instructions::Noop);
 
-        let mut unique_tm = tails[tails.len() - 1].clone();
-        unique_tm.sort();
-        unique_tm.dedup();
-        assert_eq!(2562, unique_tm.len());
-        println!("Unique tail positions for part 2: {}", unique_tm.len());
-    } */
+    let (_ss, _ss_sum) = cpu.get_signal_strengths(220);
+    println!("Sum of ss is {}", _ss_sum);
+
+    const H: usize = 6;
+    const W: usize = 40;
+    let mut matrix: [[char; W]; 6] = [['.'; W]; 6];
+    for y in 0..H {
+        for x in 0..W {
+            let t = y * W + x;
+            let pixel_center = cpu.get_x_before(t + 1);
+            let mut sprite_position: String = String::new();
+            for _p in 0..W {
+                let p = _p as i32;
+                let ch = if p >= pixel_center - 1 && p <= pixel_center + 1 { "#" } else { "." };
+                sprite_position.push_str(&ch);
+            }
+            println!("Sprite position: {}", sprite_position);
+            let ch = sprite_position.chars().nth(x).unwrap();
+            matrix[y][x] = ch;
+        }
+    }
+    println!("matrix");
+    for y in 0..H {
+        let mut sprite_position: String = String::new();
+        for x in 0..W {
+            let ch = String::from(matrix[y][x]);
+            sprite_position.push_str(&ch);
+        }
+        println!("{}", sprite_position);
+    }        
+    println!("");
+    println!("done");    
 
     Ok(())
 }
