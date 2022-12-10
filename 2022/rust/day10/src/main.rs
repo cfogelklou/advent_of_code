@@ -1,11 +1,6 @@
 use std::io::{ self };
 mod utils;
 
-#[allow(dead_code)]
-fn get_head_movement(v: &Vec<String>) -> i32 {
-    return 0;
-}
-
 enum Instructions {
     Noop,
     AddX(i32),
@@ -31,7 +26,6 @@ impl Cpu {
     }
 
     fn exec(&mut self, inst: Instructions) {
-        let curr_clock = self.clock;
         match inst {
             Instructions::Noop => {
                 self.hist_before.push(self.x);
@@ -52,7 +46,8 @@ impl Cpu {
     fn get_x_before(&self, ticks: usize) -> i32 {
         return if ticks < self.hist_before.len() { self.hist_before[ticks - 1] } else { 0 };
     }
-
+    
+    #[allow(dead_code)]
     fn get_x_after(&self, ticks: usize) -> i32 {
         return if ticks < self.hist_after.len() { self.hist_after[ticks - 1] } else { 0 };
     }
@@ -77,6 +72,51 @@ impl Cpu {
         return (ss, ss_sum);
     }
 }
+
+const CRT_HEIGHT: usize = 6;
+const CRT_WIDTH: usize = 40;
+
+#[allow(dead_code)]
+fn get_sprite_position_string(pixel_center: i32) -> String {
+    let mut sprite_position: String = String::new();
+    for _p in 0..CRT_WIDTH {
+        let p = _p as i32;
+        let ch = if p >= pixel_center - 1 && p <= pixel_center + 1 { "#" } else { "." };
+        sprite_position.push_str(&ch);
+    }
+    sprite_position
+}
+
+#[allow(dead_code)]
+fn get_matrix(cpu: Cpu, visualize:bool) -> [[char; 40]; 6] {
+    let mut matrix: [[char; CRT_WIDTH]; 6] = [['.'; CRT_WIDTH]; 6];
+    for y in 0..CRT_HEIGHT {
+        for x in 0..CRT_WIDTH {
+            let t = y * CRT_WIDTH + x;
+            let pixel_center = cpu.get_x_before(t + 1);
+            let sprite_position = get_sprite_position_string(pixel_center);
+            if visualize {
+                println!("Sprite position: {}", sprite_position);
+            }
+            let ch = sprite_position.chars().nth(x).unwrap();
+            matrix[y][x] = ch;
+        }
+    }
+    matrix
+}
+
+#[allow(dead_code)]
+fn print_matrix(matrix: [[char; 40]; 6]) {
+    for y in 0..CRT_HEIGHT {
+        let mut sprite_position: String = String::new();
+        for x in 0..CRT_WIDTH {
+            let ch = String::from(matrix[y][x]);
+            sprite_position.push_str(&ch);
+        }
+        println!("{}", sprite_position);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
@@ -94,9 +134,8 @@ mod tests {
         for line in v {
             let words: Vec<&str> = line.split_whitespace().collect();
             let mut action = Instructions::Noop;
-            let mut x: i32 = 0;
             if words[0] == "addx" {
-                x = words[1].parse::<i32>().unwrap();
+                let x = words[1].parse::<i32>().unwrap();
                 action = Instructions::AddX(x);
             }
             cpu.exec(action);
@@ -280,10 +319,9 @@ mod tests {
         let mut cpu = Cpu::new();
         for line in v {
             let words: Vec<&str> = line.split_whitespace().collect();
-            let mut action = Instructions::Noop;
-            let mut x: i32 = 0;
+            let mut action = Instructions::Noop;            
             if words[0] == "addx" {
-                x = words[1].parse::<i32>().unwrap();
+                let x = words[1].parse::<i32>().unwrap();
                 action = Instructions::AddX(x);
             }
             cpu.exec(action);
@@ -341,33 +379,11 @@ mod tests {
         // During the 140th cycle, register X has the value 21, so the signal strength is 140 * 21 = 2940.
         // During the 180th cycle, register X has the value 16, so the signal strength is 180 * 16 = 2880.
         // During the 220th cycle, register X has the value 18, so the signal strength is 220 * 18 = 3960.
-        const H: usize = 6;
-        const W: usize = 40;
-        let mut matrix: [[char; W]; 6] = [['.'; W]; 6];
-        for y in 0..H {
-            for x in 0..W {
-                let t = y * W + x;
-                let pixel_center = cpu.get_x_before(t + 1);
-                let mut sprite_position: String = String::new();
-                for _p in 0..W {
-                    let p = _p as i32;
-                    let ch = if p >= pixel_center - 1 && p <= pixel_center + 1 { "#" } else { "." };
-                    sprite_position.push_str(&ch);
-                }
-                println!("Sprite position: {}", sprite_position);
-                let ch = sprite_position.chars().nth(x).unwrap();
-                matrix[y][x] = ch;
-            }
-        }
+
+        let matrix = get_matrix(cpu, true);
+
         println!("matrix");
-        for y in 0..H {
-            let mut sprite_position: String = String::new();
-            for x in 0..W {
-                let ch = String::from(matrix[y][x]);
-                sprite_position.push_str(&ch);
-            }
-            println!("{}", sprite_position);
-        }        
+        print_matrix(matrix);
         println!("");
         println!("done");
     }
@@ -395,9 +411,8 @@ fn main() -> io::Result<()> {
     for line in v {
         let words: Vec<&str> = line.split_whitespace().clone().collect();
         let mut action = Instructions::Noop;
-        let mut x: i32 = 0;
         if words[0] == "addx" {
-            x = words[1].parse::<i32>().unwrap();
+            let x = words[1].parse::<i32>().unwrap();
             action = Instructions::AddX(x.clone());
         }
         cpu.exec(action);
@@ -408,35 +423,11 @@ fn main() -> io::Result<()> {
     let (_ss, _ss_sum) = cpu.get_signal_strengths(220);
     println!("Sum of ss is {}", _ss_sum);
 
-    const H: usize = 6;
-    const W: usize = 40;
-    let mut matrix: [[char; W]; 6] = [['.'; W]; 6];
-    for y in 0..H {
-        for x in 0..W {
-            let t = y * W + x;
-            let pixel_center = cpu.get_x_before(t + 1);
-            let mut sprite_position: String = String::new();
-            for _p in 0..W {
-                let p = _p as i32;
-                let ch = if p >= pixel_center - 1 && p <= pixel_center + 1 { "#" } else { "." };
-                sprite_position.push_str(&ch);
-            }
-            println!("Sprite position: {}", sprite_position);
-            let ch = sprite_position.chars().nth(x).unwrap();
-            matrix[y][x] = ch;
-        }
-    }
-    println!("matrix");
-    for y in 0..H {
-        let mut sprite_position: String = String::new();
-        for x in 0..W {
-            let ch = String::from(matrix[y][x]);
-            sprite_position.push_str(&ch);
-        }
-        println!("{}", sprite_position);
-    }        
     println!("");
-    println!("done");    
+    let matrix = get_matrix(cpu, false);
+    print_matrix(matrix);
+    println!("");
+    println!("done");
 
     Ok(())
 }
