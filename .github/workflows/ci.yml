@@ -9,16 +9,22 @@ on:
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Debug
-
+  INPUT_7Z_PASSWORD: ${{secrets.INPUT_7Z_PASSWORD}}
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: "true"
+
+      - name: Prepare secrets
+        working-directory: 2022/rust
+        run: |
+          $pwd
+          bash extract_secrets.sh
 
       - name: Rust & Cargo - AoC 2021
         working-directory: 2021/day10_rust/day10
@@ -63,6 +69,9 @@ jobs:
         working-directory: 2022/rust/day9
         run: cargo check && cargo test && cargo run input.txt           
 
+      - name: Rust & Cargo - AoC 2022 day 10
+        working-directory: 2022/rust/day10
+        run: cargo check && cargo test && cargo run input.txt 
 
       - name: Prepare build directory (AoC C++)
         run: |
