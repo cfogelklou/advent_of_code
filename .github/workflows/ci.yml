@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [master]
+    branches: [master, 2022_day10]
   pull_request:
     branches: [master]
   workflow_dispatch:
