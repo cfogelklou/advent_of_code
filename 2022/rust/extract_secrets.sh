@@ -3,8 +3,11 @@
 #   export INPUT_7Z_PASSWORD=pass1234
 echo ${INPUT_7Z_PASSWORD}
 
+CWD="$(pwd)"
+echo " "
+echo Current path = "$CWD"
+
 echo "Find all input.7z and extract them"
-set -e
 for f in `find ./ -name "input.7z"`
 do
     DIR="$(dirname "${f}")"

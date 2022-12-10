@@ -24,8 +24,9 @@ jobs:
         working-directory: 2022/rust
         run: |
           $pwd
+          export INPUT_7Z_PASSWORD=${{github.INPUT_7Z_PASSWORD}}
           bash extract_secrets.sh
-          
+
       - name: Rust & Cargo - AoC 2021
         working-directory: 2021/day10_rust/day10
         run: |
