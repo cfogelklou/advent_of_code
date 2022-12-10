@@ -1,7 +1,8 @@
 # !/bin/bash
 # To run on command line, do 
 #   export INPUT_7Z_PASSWORD=pass1234
-echo ${INPUT_7Z_PASSWORD}
+#INPUT_7Z_PASSWORD=$1
+#echo ${INPUT_7Z_PASSWORD}
 
 CWD="$(pwd)"
 echo " "
