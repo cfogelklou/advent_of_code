@@ -29,6 +29,7 @@ Maybe you can learn something by looking at the value of the X register througho
 
 For example, consider this larger program:
 
+```
 addx 15
 addx -11
 addx 6
@@ -175,6 +176,8 @@ addx -11
 noop
 noop
 noop
+```
+
 The interesting signal strengths can be determined as follows:
 
 During the 20th cycle, register X has the value 21, so the signal strength is 20 * 21 = 420. (The 20th cycle occurs in the middle of the second addx -1, so the value of register X is the starting value, 1, plus all of the other addx values up to that point: 1 + 15 - 11 + 6 - 3 + 5 - 1 - 8 + 13 + 4 = 21.)
