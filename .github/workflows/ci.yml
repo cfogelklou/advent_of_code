@@ -9,7 +9,7 @@ on:
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Debug
-
+  INPUT_7Z_PASSWORD: ${{github.INPUT_7Z_PASSWORD}}
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -26,6 +26,10 @@ jobs:
           cargo check
           cargo test
           cargo run input.txt
+
+      - name: Prepare secrets
+        working-directory: 2022/rust
+        run: ./extract_secrets.sh
 
       - name: Rust & Cargo - AoC 2022 day 1
         working-directory: 2022/rust/day1
