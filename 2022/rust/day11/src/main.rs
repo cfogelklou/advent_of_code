@@ -48,7 +48,7 @@ impl Monkey {
             } else if "Test:" == words[0] {
                 let x = utils::robust_to_int(words[3]);
                 assert!(monkey.divisible == 0);
-                monkey.divisible = x  as i64;
+                monkey.divisible = x as i64;
             } else if "If" == words[0] {
                 let target_monkey = utils::robust_to_int(words[5]);
                 if "true:" == words[1] {
@@ -73,6 +73,7 @@ impl Monkey {
         self.items.push_back(item);
     }
 
+    #[allow(dead_code)]
     fn get_items(&self) -> Vec<i64> {
         let x: Vec<i64> = self.items
             .iter()
@@ -85,55 +86,72 @@ impl Monkey {
         return x;
     }
 
-    fn do_operations(&mut self, really_worried:bool) -> (i64, usize) {
+    fn do_operations(&mut self, modulo: i64, verbose: bool) -> (i64, usize) {
         let mut worry_level: i64 = -1;
         let mut target_monkey: usize = 100000;
         if self.items.len() > 0 {
             let new_item = self.items.pop_front().unwrap() as i64;
-            println!("  Monkey inspects an item with a worry level of {}.", new_item);
+            if verbose {
+                println!("  Monkey inspects an item with a worry level of {}.", new_item);
+            }
             self.inspections += 1;
 
             worry_level = match self.op {
                 MonkeyOperations::Mul => {
-                    let res = new_item * self.op_param as i64;
-                    println!("    Worry level is multiplied by {} to {}", self.op_param, res);
+                    let res = new_item * (self.op_param as i64);
+                    if verbose {
+                        println!("    Worry level is multiplied by {} to {}", self.op_param, res);
+                    }
                     res
                 }
                 MonkeyOperations::Add => {
-                    let res = new_item + self.op_param as i64;
-                    println!("    Worry level increases by {} to {}.", self.op_param, res);
+                    let res = new_item + (self.op_param as i64);
+                    if verbose {
+                        println!("    Worry level increases by {} to {}.", self.op_param, res);
+                    }
                     res
                 }
                 MonkeyOperations::Squared => {
                     let res = new_item * new_item;
-                    println!("    Worry level is multiplied by itself to {}.", res);
+                    if verbose {
+                        println!("    Worry level is multiplied by itself to {}.", res);
+                    }
                     res
                 }
             };
-            if !really_worried {
+            if 0 == modulo {
                 worry_level = worry_level / 3;
-            }
-            println!("    Monkey gets bored with item. Worry level is divided by 3 to {}.", worry_level);
-            let divisible = worry_level % (self.divisible as i64) == 0;
-            if divisible {
-                println!("    Current worry level is divisible by {}.", self.divisible);
             } else {
-                println!("    Current worry level is not divisible by {}.", self.divisible);
+                worry_level = worry_level % modulo;
+            }
+            if verbose {
+                println!("    Monkey gets bored with item. Worry level is divided by 3 to {}.", worry_level);
+            }
+            let divisible = worry_level % self.divisible == 0;
+            if verbose {
+                if divisible {
+                    println!("    Current worry level is divisible by {}.", self.divisible);
+                } else {
+                    println!("    Current worry level is not divisible by {}.", self.divisible);
+                }
             }
 
             let tm = if divisible { self.throw_targets.0 } else { self.throw_targets.1 };
             target_monkey = tm as usize;
 
-            println!(
-                "    Item with worry level {worry_level} is thrown to monkey {target_monkey}."
-            );
+            if verbose {
+                println!(
+                    "    Item with worry level {worry_level} is thrown to monkey {target_monkey}."
+                );
+            }
         }
 
         return (worry_level, target_monkey);
     }
 }
 
-fn load_vector_into_monkeys(v: Vec<String>, monkeys: &mut Vec<Monkey>) {
+fn load_vector_into_monkeys(v: Vec<String>, monkeys: &mut Vec<Monkey>) -> i64 {
+    let mut modulo: i64 = 1;
     let mut i = 0;
     while i < v.len() {
         if i >= v.len() {
@@ -147,10 +165,12 @@ fn load_vector_into_monkeys(v: Vec<String>, monkeys: &mut Vec<Monkey>) {
                 let new_vec: Vec<String> = v[i..i + 5].to_vec().clone();
                 i += 5;
                 let monkey = Monkey::new(&new_vec);
+                modulo *= monkey.divisible;
                 monkeys.push(monkey);
             }
         }
     }
+    return modulo;
 }
 
 fn get_top_two_monkey_inspections(monkeys: Vec<Monkey>) -> Vec<i64> {
@@ -165,16 +185,20 @@ fn get_top_two_monkey_inspections(monkeys: Vec<Monkey>) -> Vec<i64> {
     inspections
 }
 
-fn monkey_business_test(v: Vec<String>, rounds:i32, really_worried:bool) ->i64 {
+fn monkey_business_test(v: Vec<String>, rounds: i32, really_worried: bool, verbose: bool) -> i64 {
     let mut monkeys: Vec<Monkey> = Vec::new();
-    load_vector_into_monkeys(v, &mut monkeys);
+    let modulo64 = load_vector_into_monkeys(v, &mut monkeys);
+    let modulo = if really_worried { modulo64 } else { 0 };
+
     for _rounds in 0..rounds {
         for m_idx in 0..monkeys.len() {
-            println!("Monkey {}:", m_idx);
+            if verbose {
+                println!("Monkey {}:", m_idx);
+            }
             let mut is_done: bool = false;
             while !is_done {
                 let m = monkeys.get_mut(m_idx).unwrap();
-                let (wl, tm) = m.do_operations(really_worried);
+                let (wl, tm) = m.do_operations(modulo, verbose);
                 if wl < 0 {
                     is_done = true;
                 } else {
@@ -243,7 +267,7 @@ mod tests {
                 let mut is_done: bool = false;
                 while !is_done {
                     let m = monkeys.get_mut(m_idx).unwrap();
-                    let (wl, tm) = m.do_operations(false);
+                    let (wl, tm) = m.do_operations(0, true);
                     if wl < 0 {
                         is_done = true;
                     } else {
@@ -322,7 +346,7 @@ mod tests {
         assert_ne!(0, v.len());
 
         if true {
-            let mb = monkey_business_test(v, 10000, true);
+            let mb = monkey_business_test(v, 10000, true, false);
             assert_eq!(mb, 2713310158);
         }
     }
@@ -350,19 +374,14 @@ fn main() -> io::Result<()> {
 
     // Part 1
     if true {
-        monkey_business_test(v.clone(), 20, false);
+        monkey_business_test(v.clone(), 20, false, true);
     }
 
     // Part 2
-    if false {
-        monkey_business_test(v.clone(), 10000, true);
+    if true {
+        monkey_business_test(v.clone(), 10000, true, false);
     }
 
     //assert_eq!(monkey_business, 10605);
     Ok(())
 }
-
-
-
-
-
