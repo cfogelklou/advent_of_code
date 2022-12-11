@@ -13,6 +13,7 @@ struct Monkey {
     throw_targets: (i32, i32),
     op: MonkeyOperations,
     op_param: i32,
+    inspections: i32,
 }
 
 impl Monkey {
@@ -23,6 +24,7 @@ impl Monkey {
             throw_targets: (-1, -1),
             op: MonkeyOperations::Mul,
             op_param: -1,
+            inspections: 0,
         };
 
         for line in v {
@@ -83,19 +85,49 @@ impl Monkey {
         return x;
     }
 
-    fn do_operations(&mut self) -> i32 {
+    fn do_operations(&mut self) -> (i32, usize) {
+        let mut worry_level: i32 = -1;
+        let mut target_monkey: usize = 100000;
         if self.items.len() > 0 {
-            let mut new_item = self.items.pop_front().unwrap();
+            let new_item = self.items.pop_front().unwrap();
+            println!("  Monkey inspects an item with a worry level of {}.", new_item);
+            self.inspections += 1;
 
-            new_item = match self.op {
-                MonkeyOperations::Add => { new_item + self.op_param }
-                MonkeyOperations::Mul => { new_item * self.op_param }
-                MonkeyOperations::Squared => { new_item * new_item }
+            worry_level = match self.op {
+                MonkeyOperations::Mul => {
+                    let res = new_item * self.op_param;
+                    println!("    Worry level is multiplied by {} to {}", self.op_param, res);
+                    res
+                }
+                MonkeyOperations::Add => {
+                    let res = new_item + self.op_param;
+                    println!("    Worry level increases by {} to {}.", self.op_param, res);
+                    res
+                }
+                MonkeyOperations::Squared => {
+                    let res = new_item * new_item;
+                    println!("    Worry level is multiplied by itself to {}.", res);
+                    res
+                }
             };
-            return new_item;
+            worry_level = worry_level / 3;
+            println!("    Monkey gets bored with item. Worry level is divided by 3 to {}.", worry_level);
+            let divisible = worry_level % self.divisible == 0;
+            if divisible {
+                println!("    Current worry level is divisible by {}.", self.divisible);
+            } else {
+                println!("    Current worry level is not divisible by {}.", self.divisible);
+            }
+
+            let tm = if divisible { self.throw_targets.0 } else { self.throw_targets.1 };
+            target_monkey = tm as usize;
+
+            println!(
+                "    Item with worry level {worry_level} is thrown to monkey {target_monkey}."
+            );
         }
-        assert!(false);
-        return -1;
+
+        return (worry_level, target_monkey);
     }
 }
 
@@ -105,7 +137,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn cpu_test() {
+    fn monkey_biz() {
         let raw_string: String =
             "Monkey 0:
         Starting items: 79, 98
@@ -161,7 +193,66 @@ mod tests {
         assert_eq!(monkeys[1].get_items(), [54, 65, 75, 74].to_vec());
         assert_eq!(monkeys[2].get_items(), [79, 60, 97].to_vec());
         assert_eq!(monkeys[3].get_items(), [74].to_vec());
+
+        for _rounds in 0..20 {
+            for m_idx in 0..monkeys.len() {
+                println!("Monkey {}:", m_idx);
+                let mut is_done: bool = false;
+                while !is_done {
+                    let m = monkeys.get_mut(m_idx).unwrap();
+                    let (wl, tm) = m.do_operations();
+                    if wl < 0 {
+                        is_done = true;
+                    } else {
+                        //if tm != m_idx {
+                        let t = monkeys.get_mut(tm).unwrap();
+                        t.catch(wl);
+                        //}
+                    }
+                }
+            }
+            match _rounds {
+                0 => {
+                    assert_eq!(monkeys[0].get_items(), [20, 23, 27, 26].to_vec());
+                    assert_eq!(monkeys[1].get_items(), [2080, 25, 167, 207, 401, 1046].to_vec());
+                    assert_eq!(monkeys[2].get_items(), [].to_vec());
+                    assert_eq!(monkeys[3].get_items(), [].to_vec());
+                }
+                1 => {
+                    assert_eq!(monkeys[0].get_items(), [695, 10, 71, 135, 350].to_vec());
+                    assert_eq!(monkeys[1].get_items(), [43, 49, 58, 55, 362].to_vec());
+                    assert_eq!(monkeys[2].get_items(), [].to_vec());
+                    assert_eq!(monkeys[3].get_items(), [].to_vec());
+                }
+                19 => {
+                    assert_eq!(monkeys[0].get_items(), [10, 12, 14, 26, 34].to_vec());
+                    assert_eq!(monkeys[1].get_items(), [245, 93, 53, 199, 115].to_vec());
+                    assert_eq!(monkeys[2].get_items(), [].to_vec());
+                    assert_eq!(monkeys[3].get_items(), [].to_vec());
+                    assert_eq!(monkeys[0].inspections, 101);
+                    assert_eq!(monkeys[1].inspections, 95);
+                    assert_eq!(monkeys[2].inspections, 7);
+                    assert_eq!(monkeys[3].inspections, 105);
+                }
+                _ => {}
+            }
+        }
+
+        let mut inspections: Vec<i32> = monkeys
+            .iter()
+            .map(|m| {
+                return m.inspections;
+            })
+            .collect();
+        inspections.sort();
+        inspections.reverse();
+
+        let monkey_business = inspections[0] * inspections[1];
+        println!("Monkey business = {monkey_business}");
+        assert_eq!(monkey_business, 10605);
     }
+
+    //}
 }
 
 fn main() -> io::Result<()> {
