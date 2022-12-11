@@ -86,17 +86,16 @@ impl Monkey {
         return x;
     }
 
-    fn do_operations(&mut self, modulo: i64, verbose: bool) -> (i64, usize) {
-        let mut worry_level: i64 = -1;
-        let mut target_monkey: usize = 100000;
+    fn do_operations(&mut self, modulo: i64, verbose: bool) -> Option<(i64, usize)> {
         if self.items.len() > 0 {
+            
             let new_item = self.items.pop_front().unwrap() as i64;
             if verbose {
                 println!("  Monkey inspects an item with a worry level of {}.", new_item);
             }
             self.inspections += 1;
 
-            worry_level = match self.op {
+            let mut worry_level = match self.op {
                 MonkeyOperations::Mul => {
                     let res = new_item * (self.op_param as i64);
                     if verbose {
@@ -137,16 +136,17 @@ impl Monkey {
             }
 
             let tm = if divisible { self.throw_targets.0 } else { self.throw_targets.1 };
-            target_monkey = tm as usize;
+            let target_monkey = tm as usize;
 
             if verbose {
                 println!(
                     "    Item with worry level {worry_level} is thrown to monkey {target_monkey}."
                 );
             }
+            return Some((worry_level, target_monkey));
         }
 
-        return (worry_level, target_monkey);
+        return None;
     }
 }
 
@@ -198,12 +198,17 @@ fn monkey_business_test(v: Vec<String>, rounds: i32, really_worried: bool, verbo
             let mut is_done: bool = false;
             while !is_done {
                 let m = monkeys.get_mut(m_idx).unwrap();
-                let (wl, tm) = m.do_operations(modulo, verbose);
-                if wl < 0 {
-                    is_done = true;
-                } else {
-                    let t = monkeys.get_mut(tm).unwrap();
-                    t.catch(wl);
+                let res = m.do_operations(modulo, verbose);
+                match res {
+                    None => {
+                        is_done = true;
+                    }
+                    Some(opt) => {
+                        let (wl, tm) = opt;
+                        assert!(wl >= 0);
+                        let t = monkeys.get_mut(tm).unwrap();
+                        t.catch(wl);
+                    }
                 }
             }
         }
@@ -267,14 +272,17 @@ mod tests {
                 let mut is_done: bool = false;
                 while !is_done {
                     let m = monkeys.get_mut(m_idx).unwrap();
-                    let (wl, tm) = m.do_operations(0, true);
-                    if wl < 0 {
-                        is_done = true;
-                    } else {
-                        //if tm != m_idx {
-                        let t = monkeys.get_mut(tm).unwrap();
-                        t.catch(wl);
-                        //}
+                    let res = m.do_operations(0, true);
+                    match res {
+                        None => {
+                            is_done = true;
+                        }
+                        Some(opt) => {
+                            let (wl, tm) = opt;
+                            assert!(wl >= 0);
+                            let t = monkeys.get_mut(tm).unwrap();
+                            t.catch(wl);
+                        }
                     }
                 }
             }
