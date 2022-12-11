@@ -85,7 +85,7 @@ impl Monkey {
         return x;
     }
 
-    fn do_operations(&mut self) -> (i64, usize) {
+    fn do_operations(&mut self, really_worried:bool) -> (i64, usize) {
         let mut worry_level: i64 = -1;
         let mut target_monkey: usize = 100000;
         if self.items.len() > 0 {
@@ -110,7 +110,9 @@ impl Monkey {
                     res
                 }
             };
-            worry_level = worry_level / 3;
+            if !really_worried {
+                worry_level = worry_level / 3;
+            }
             println!("    Monkey gets bored with item. Worry level is divided by 3 to {}.", worry_level);
             let divisible = worry_level % (self.divisible as i64) == 0;
             if divisible {
@@ -163,6 +165,31 @@ fn get_top_two_monkey_inspections(monkeys: Vec<Monkey>) -> Vec<i64> {
     inspections
 }
 
+fn monkey_business_test(v: Vec<String>, rounds:i32, really_worried:bool) ->i64 {
+    let mut monkeys: Vec<Monkey> = Vec::new();
+    load_vector_into_monkeys(v, &mut monkeys);
+    for _rounds in 0..rounds {
+        for m_idx in 0..monkeys.len() {
+            println!("Monkey {}:", m_idx);
+            let mut is_done: bool = false;
+            while !is_done {
+                let m = monkeys.get_mut(m_idx).unwrap();
+                let (wl, tm) = m.do_operations(really_worried);
+                if wl < 0 {
+                    is_done = true;
+                } else {
+                    let t = monkeys.get_mut(tm).unwrap();
+                    t.catch(wl);
+                }
+            }
+        }
+    }
+    let inspections = get_top_two_monkey_inspections(monkeys);
+    let monkey_business = inspections[0] * inspections[1];
+    println!("Monkey business = {monkey_business}");
+    return monkey_business;
+}
+
 #[cfg(test)]
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
@@ -203,7 +230,7 @@ mod tests {
 
         let mut monkeys: Vec<Monkey> = Vec::new();
 
-        load_vector_into_monkeys(v, &mut monkeys);
+        load_vector_into_monkeys(v.clone(), &mut monkeys);
 
         assert_eq!(monkeys[0].get_items(), [79, 98].to_vec());
         assert_eq!(monkeys[1].get_items(), [54, 65, 75, 74].to_vec());
@@ -216,7 +243,7 @@ mod tests {
                 let mut is_done: bool = false;
                 while !is_done {
                     let m = monkeys.get_mut(m_idx).unwrap();
-                    let (wl, tm) = m.do_operations();
+                    let (wl, tm) = m.do_operations(false);
                     if wl < 0 {
                         is_done = true;
                     } else {
@@ -261,6 +288,45 @@ mod tests {
         assert_eq!(monkey_business, 10605);
     }
 
+    #[test]
+    fn monkey_biz_2() {
+        let raw_string: String =
+            "Monkey 0:
+        Starting items: 79, 98
+        Operation: new = old * 19
+        Test: divisible by 23
+          If true: throw to monkey 2
+          If false: throw to monkey 3
+      
+      Monkey 1:
+        Starting items: 54, 65, 75, 74
+        Operation: new = old + 6
+        Test: divisible by 19
+          If true: throw to monkey 2
+          If false: throw to monkey 0
+      
+      Monkey 2:
+        Starting items: 79, 60, 97
+        Operation: new = old * old
+        Test: divisible by 13
+          If true: throw to monkey 1
+          If false: throw to monkey 3
+      
+      Monkey 3:
+        Starting items: 74
+        Operation: new = old + 3
+        Test: divisible by 17
+          If true: throw to monkey 0
+          If false: throw to monkey 1".to_string();
+        let v: Vec<String> = utils::test_input_to_vec(raw_string, true);
+        assert_ne!(0, v.len());
+
+        if true {
+            let mb = monkey_business_test(v, 10000, true);
+            assert_eq!(mb, 2713310158);
+        }
+    }
+
     //}
 }
 
@@ -282,34 +348,21 @@ fn main() -> io::Result<()> {
     }
     assert_ne!(0, v.len());
 
-    let mut monkeys: Vec<Monkey> = Vec::new();
-
-    load_vector_into_monkeys(v, &mut monkeys);
-
-    for _rounds in 0..20 {
-        for m_idx in 0..monkeys.len() {
-            println!("Monkey {}:", m_idx);
-            let mut is_done: bool = false;
-            while !is_done {
-                let m = monkeys.get_mut(m_idx).unwrap();
-                let (wl, tm) = m.do_operations();
-                if wl < 0 {
-                    is_done = true;
-                } else {
-                    let t = monkeys.get_mut(tm).unwrap();
-                    t.catch(wl);
-                }
-            }
-        }
+    // Part 1
+    if true {
+        monkey_business_test(v.clone(), 20, false);
     }
 
-    let inspections = get_top_two_monkey_inspections(monkeys);
+    // Part 2
+    if true {
+        monkey_business_test(v.clone(), 10000, true);
+    }
 
-    let monkey_business = inspections[0] * inspections[1];
-    println!("Monkey business = {monkey_business}");
     //assert_eq!(monkey_business, 10605);
     Ok(())
 }
+
+
 
 
 
