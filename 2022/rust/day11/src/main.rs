@@ -8,12 +8,12 @@ enum MonkeyOperations {
 }
 
 struct Monkey {
-    items: VecDeque<i32>,
-    divisible: i32,
+    items: VecDeque<i64>,
+    divisible: i64,
     throw_targets: (i32, i32),
     op: MonkeyOperations,
     op_param: i32,
-    inspections: i32,
+    inspections: i64,
 }
 
 impl Monkey {
@@ -31,7 +31,7 @@ impl Monkey {
             let words: Vec<&str> = line.split_whitespace().collect();
             if "Starting" == words[0] {
                 for i in 2..words.len() {
-                    let x = utils::robust_to_int(words[i]);
+                    let x = utils::robust_to_int(words[i]) as i64;
                     monkey.catch(x);
                 }
             } else if "Operation:" == words[0] {
@@ -48,7 +48,7 @@ impl Monkey {
             } else if "Test:" == words[0] {
                 let x = utils::robust_to_int(words[3]);
                 assert!(monkey.divisible == 0);
-                monkey.divisible = x;
+                monkey.divisible = x  as i64;
             } else if "If" == words[0] {
                 let target_monkey = utils::robust_to_int(words[5]);
                 if "true:" == words[1] {
@@ -68,16 +68,16 @@ impl Monkey {
         return monkey;
     }
 
-    fn catch(&mut self, item: i32) {
+    fn catch(&mut self, item: i64) {
         //self.items.push_back(item);
         self.items.push_back(item);
     }
 
-    fn get_items(&self) -> Vec<i32> {
-        let x: Vec<i32> = self.items
+    fn get_items(&self) -> Vec<i64> {
+        let x: Vec<i64> = self.items
             .iter()
             .map(|val| {
-                let v: i32 = *val;
+                let v: i64 = *val;
                 return v;
             })
             .collect();
@@ -85,7 +85,7 @@ impl Monkey {
         return x;
     }
 
-    fn do_operations(&mut self) -> (i32, usize) {
+    fn do_operations(&mut self) -> (i64, usize) {
         let mut worry_level: i64 = -1;
         let mut target_monkey: usize = 100000;
         if self.items.len() > 0 {
@@ -127,7 +127,7 @@ impl Monkey {
             );
         }
 
-        return (worry_level as i32, target_monkey);
+        return (worry_level, target_monkey);
     }
 }
 
@@ -151,8 +151,8 @@ fn load_vector_into_monkeys(v: Vec<String>, monkeys: &mut Vec<Monkey>) {
     }
 }
 
-fn get_top_two_monkey_inspections(monkeys: Vec<Monkey>) -> Vec<i32> {
-    let mut inspections: Vec<i32> = monkeys
+fn get_top_two_monkey_inspections(monkeys: Vec<Monkey>) -> Vec<i64> {
+    let mut inspections: Vec<i64> = monkeys
         .iter()
         .map(|m| {
             return m.inspections;
