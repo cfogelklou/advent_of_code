@@ -1,119 +1,101 @@
-use std::io::{ self };
+use std::{ io::{ self }, collections::VecDeque };
 mod utils;
 
-enum Instructions {
-    Noop,
-    AddX(i32),
+enum MonkeyOperations {
+    Squared,
+    Mul,
+    Add,
 }
 
-struct Cpu {
-    x: i32,
-    clock: usize,
-    hist_before: Vec<i32>,
-    hist_after: Vec<i32>,
+struct Monkey {
+    items: VecDeque<i32>,
+    divisible: i32,
+    throw_targets: (i32, i32),
+    op: MonkeyOperations,
+    op_param: i32,
 }
 
-impl Cpu {
-    fn new() -> Cpu {
-        let cpu = Cpu {
-            x: 1,
-            clock: 0,
-            hist_before: Vec::new(), // Stores the value before each cycle
-            hist_after: Vec::new(), // Stores the value after each cycle
+impl Monkey {
+    fn new(v: &Vec<String>) -> Monkey {
+        let mut monkey = Monkey {
+            items: VecDeque::new(),
+            divisible: 0,
+            throw_targets: (-1, -1),
+            op: MonkeyOperations::Mul,
+            op_param: -1,
         };
 
-        return cpu;
-    }
-
-    fn exec(&mut self, inst: Instructions) {
-        match inst {
-            Instructions::Noop => {
-                self.hist_before.push(self.x);
-                self.clock += 1;
-                self.hist_after.push(self.x);
+        for line in v {
+            let words: Vec<&str> = line.split_whitespace().collect();
+            if "Starting" == words[0] {
+                for i in 2..words.len() {
+                    let x = utils::robust_to_int(words[i]);
+                    monkey.catch(x);
+                }
+            } else if "Operation:" == words[0] {
+                if line.contains("+") {
+                    monkey.op = MonkeyOperations::Add;
+                    monkey.op_param = utils::robust_to_int(words[5]);
+                } else if "old" == words[5] {
+                    monkey.op = MonkeyOperations::Squared;
+                    monkey.op_param = 1;
+                } else {
+                    monkey.op = MonkeyOperations::Mul;
+                    monkey.op_param = utils::robust_to_int(words[5]);
+                }
+            } else if "Test:" == words[0] {
+                let x = utils::robust_to_int(words[3]);
+                assert!(monkey.divisible == 0);
+                monkey.divisible = x;
+            } else if "If" == words[0] {
+                let target_monkey = utils::robust_to_int(words[5]);
+                if "true:" == words[1] {
+                    assert!(monkey.throw_targets.0 < 0);
+                    monkey.throw_targets.0 = target_monkey;
+                } else {
+                    assert!(monkey.throw_targets.1 < 0);
+                    monkey.throw_targets.1 = target_monkey;
+                }
             }
-            Instructions::AddX(num) => {
-                self.hist_before.push(self.x);
-                self.hist_before.push(self.x);
-                self.clock += 2;
-                self.hist_after.push(self.x);
-                self.x += num;
-                self.hist_after.push(self.x);
-            }
         }
+        assert!(monkey.divisible > 0);
+        assert!(monkey.throw_targets.0 >= 0);
+        assert!(monkey.throw_targets.1 >= 0);
+        assert!(monkey.items.len() > 0);
+        assert!(monkey.op_param > 0);
+        return monkey;
     }
 
-    fn get_x_before(&self, ticks: usize) -> i32 {
-        return if ticks < self.hist_before.len() { self.hist_before[ticks - 1] } else { 0 };
-    }
-    
-    #[allow(dead_code)]
-    fn get_x_after(&self, ticks: usize) -> i32 {
-        return if ticks < self.hist_after.len() { self.hist_after[ticks - 1] } else { 0 };
+    fn catch(&mut self, item: i32) {
+        //self.items.push_back(item);
+        self.items.push_back(item);
     }
 
-    fn get_signal_strengths(&self, ticks: usize) -> (i32, i64) {
-        let mut ss: i32 = 0;
-        let mut ss_sum: i64 = 0;
-        if ticks >= self.hist_before.len() {
-            return (ss, ss_sum);
-        }
-        if ticks < 20 {
-            return (ss, ss_sum);
-        }
-        let mut idx = 20;
-        while idx <= ticks {
-            let x = self.get_x_before(idx);
-            ss = x * (idx as i32);
-            ss_sum += ss as i64;
-            idx += 40;
-        }
+    fn get_items(&self) -> Vec<i32> {
+        let x: Vec<i32> = self.items
+            .iter()
+            .map(|val| {
+                let v: i32 = *val;
+                return v;
+            })
+            .collect();
 
-        return (ss, ss_sum);
+        return x;
     }
-}
 
-const CRT_HEIGHT: usize = 6;
-const CRT_WIDTH: usize = 40;
+    fn do_operations(&mut self) -> i32 {
+        if self.items.len() > 0 {
+            let mut new_item = self.items.pop_front().unwrap();
 
-#[allow(dead_code)]
-fn get_sprite_position_string(pixel_center: i32) -> String {
-    let mut sprite_position: String = String::new();
-    for _p in 0..CRT_WIDTH {
-        let p = _p as i32;
-        let ch = if p >= pixel_center - 1 && p <= pixel_center + 1 { "#" } else { "." };
-        sprite_position.push_str(&ch);
-    }
-    sprite_position
-}
-
-#[allow(dead_code)]
-fn get_matrix(cpu: Cpu, visualize:bool) -> [[char; 40]; 6] {
-    let mut matrix: [[char; CRT_WIDTH]; 6] = [['.'; CRT_WIDTH]; 6];
-    for y in 0..CRT_HEIGHT {
-        for x in 0..CRT_WIDTH {
-            let t = y * CRT_WIDTH + x;
-            let pixel_center = cpu.get_x_before(t + 1);
-            let sprite_position = get_sprite_position_string(pixel_center);
-            if visualize {
-                println!("Sprite position: {}", sprite_position);
-            }
-            let ch = sprite_position.chars().nth(x).unwrap();
-            matrix[y][x] = ch;
+            new_item = match self.op {
+                MonkeyOperations::Add => { new_item + self.op_param }
+                MonkeyOperations::Mul => { new_item * self.op_param }
+                MonkeyOperations::Squared => { new_item * new_item }
+            };
+            return new_item;
         }
-    }
-    matrix
-}
-
-#[allow(dead_code)]
-fn print_matrix(matrix: [[char; 40]; 6]) {
-    for y in 0..CRT_HEIGHT {
-        let mut sprite_position: String = String::new();
-        for x in 0..CRT_WIDTH {
-            let ch = String::from(matrix[y][x]);
-            sprite_position.push_str(&ch);
-        }
-        println!("{}", sprite_position);
+        assert!(false);
+        return -1;
     }
 }
 
@@ -124,268 +106,61 @@ mod tests {
 
     #[test]
     fn cpu_test() {
-        let raw_string: String = "noop
-            addx 3
-            addx -5".to_string();
-        let v: Vec<String> = utils::test_input_to_vec(raw_string, true);
-        assert_ne!(0, v.len());
-
-        let mut cpu = Cpu::new();
-        for line in v {
-            let words: Vec<&str> = line.split_whitespace().collect();
-            let mut action = Instructions::Noop;
-            if words[0] == "addx" {
-                let x = words[1].parse::<i32>().unwrap();
-                action = Instructions::AddX(x);
-            }
-            cpu.exec(action);
-        }
-        // One more exec
-        cpu.exec(Instructions::Noop);
-
-        // At the start of the first cycle, the noop instruction begins execution. During the first cycle, X is 1. After the first cycle, the noop instruction finishes execution, doing nothing.
-        assert_eq!(cpu.hist_before[1 - 1], 1);
-        assert_eq!(cpu.get_x_after(1), 1);
-
-        // At the start of the second cycle, the addx 3 instruction begins execution. During the second cycle, X is still 1.
-        assert_eq!(cpu.hist_before[2 - 1], 1);
-        assert_eq!(cpu.get_x_after(2), 1);
-
-        // During the third cycle, X is still 1. After the third cycle, the addx 3 instruction finishes execution, setting X to 4.
-        assert_eq!(cpu.hist_before[3 - 1], 1);
-        assert_eq!(cpu.get_x_after(3), 4);
-
-        // At the start of the fourth cycle, the addx -5 instruction begins execution. During the fourth cycle, X is still 4.
-        assert_eq!(cpu.hist_before[4 - 1], 4);
-        assert_eq!(cpu.get_x_after(4), 4);
-
-        // During the fifth cycle, X is still 4. After the fifth cycle, the addx -5 instruction finishes execution, setting X to -1.
-        assert_eq!(cpu.hist_before[5 - 1], 4);
-        assert_eq!(cpu.get_x_after(5), -1);
-    }
-
-    #[test]
-    fn cpu_test_2() {
         let raw_string: String =
-            "addx 15
-        addx -11
-        addx 6
-        addx -3
-        addx 5
-        addx -1
-        addx -8
-        addx 13
-        addx 4
-        noop
-        addx -1
-        addx 5
-        addx -1
-        addx 5
-        addx -1
-        addx 5
-        addx -1
-        addx 5
-        addx -1
-        addx -35
-        addx 1
-        addx 24
-        addx -19
-        addx 1
-        addx 16
-        addx -11
-        noop
-        noop
-        addx 21
-        addx -15
-        noop
-        noop
-        addx -3
-        addx 9
-        addx 1
-        addx -3
-        addx 8
-        addx 1
-        addx 5
-        noop
-        noop
-        noop
-        noop
-        noop
-        addx -36
-        noop
-        addx 1
-        addx 7
-        noop
-        noop
-        noop
-        addx 2
-        addx 6
-        noop
-        noop
-        noop
-        noop
-        noop
-        addx 1
-        noop
-        noop
-        addx 7
-        addx 1
-        noop
-        addx -13
-        addx 13
-        addx 7
-        noop
-        addx 1
-        addx -33
-        noop
-        noop
-        noop
-        addx 2
-        noop
-        noop
-        noop
-        addx 8
-        noop
-        addx -1
-        addx 2
-        addx 1
-        noop
-        addx 17
-        addx -9
-        addx 1
-        addx 1
-        addx -3
-        addx 11
-        noop
-        noop
-        addx 1
-        noop
-        addx 1
-        noop
-        noop
-        addx -13
-        addx -19
-        addx 1
-        addx 3
-        addx 26
-        addx -30
-        addx 12
-        addx -1
-        addx 3
-        addx 1
-        noop
-        noop
-        noop
-        addx -9
-        addx 18
-        addx 1
-        addx 2
-        noop
-        noop
-        addx 9
-        noop
-        noop
-        noop
-        addx -1
-        addx 2
-        addx -37
-        addx 1
-        addx 3
-        noop
-        addx 15
-        addx -21
-        addx 22
-        addx -6
-        addx 1
-        noop
-        addx 2
-        addx 1
-        noop
-        addx -10
-        noop
-        noop
-        addx 20
-        addx 1
-        addx 2
-        addx 2
-        addx -6
-        addx -11
-        noop
-        noop
-        noop".to_string();
+            "Monkey 0:
+        Starting items: 79, 98
+        Operation: new = old * 19
+        Test: divisible by 23
+          If true: throw to monkey 2
+          If false: throw to monkey 3
+      
+      Monkey 1:
+        Starting items: 54, 65, 75, 74
+        Operation: new = old + 6
+        Test: divisible by 19
+          If true: throw to monkey 2
+          If false: throw to monkey 0
+      
+      Monkey 2:
+        Starting items: 79, 60, 97
+        Operation: new = old * old
+        Test: divisible by 13
+          If true: throw to monkey 1
+          If false: throw to monkey 3
+      
+      Monkey 3:
+        Starting items: 74
+        Operation: new = old + 3
+        Test: divisible by 17
+          If true: throw to monkey 0
+          If false: throw to monkey 1".to_string();
         let v: Vec<String> = utils::test_input_to_vec(raw_string, true);
         assert_ne!(0, v.len());
 
-        let mut cpu = Cpu::new();
-        for line in v {
-            let words: Vec<&str> = line.split_whitespace().collect();
-            let mut action = Instructions::Noop;            
-            if words[0] == "addx" {
-                let x = words[1].parse::<i32>().unwrap();
-                action = Instructions::AddX(x);
+        let mut monkeys: Vec<Monkey> = Vec::new();
+
+        let mut i = 0;
+        while i < v.len() {
+            if i >= v.len() {
+                break;
             }
-            cpu.exec(action);
-        }
-        // One more exec
-        cpu.exec(Instructions::Noop);
-
-        assert_eq!(cpu.hist_before[20 - 1], 21);
-        assert_eq!(cpu.get_x_before(20), 21);
-        {
-            let (ss, _ss_sum) = cpu.get_signal_strengths(20);
-            assert_eq!(ss, 420);
-        }
-
-        assert_eq!(cpu.hist_before[60 - 1], 19);
-        assert_eq!(cpu.get_x_before(60), 19);
-        {
-            let (ss, _ss_sum) = cpu.get_signal_strengths(60);
-            assert_eq!(ss, 1140);
+            let line = v[i].clone();
+            i += 1;
+            let words: Vec<&str> = line.split_whitespace().collect();
+            if words.len() > 0 {
+                if "Monkey" == words[0] {
+                    let new_vec: Vec<String> = v[i..i + 5].to_vec().clone();
+                    i += 5;
+                    let monkey = Monkey::new(&new_vec);
+                    monkeys.push(monkey);
+                }
+            }
         }
 
-        assert_eq!(cpu.hist_before[100 - 1], 18);
-        assert_eq!(cpu.get_x_before(100), 18);
-        {
-            let (ss, _ss_sum) = cpu.get_signal_strengths(100);
-            assert_eq!(ss, 1800);
-        }
-
-        assert_eq!(cpu.hist_before[140 - 1], 21);
-        assert_eq!(cpu.get_x_before(140), 21);
-        {
-            let (ss, _ss_sum) = cpu.get_signal_strengths(140);
-            assert_eq!(ss, 2940);
-        }
-
-        assert_eq!(cpu.hist_before[180 - 1], 16);
-        assert_eq!(cpu.get_x_before(180), 16);
-        {
-            let (ss, _ss_sum) = cpu.get_signal_strengths(180);
-            assert_eq!(ss, 2880);
-        }
-
-        assert_eq!(cpu.hist_before[220 - 1], 18);
-        assert_eq!(cpu.get_x_before(220), 18);
-        {
-            let (ss, ss_sum) = cpu.get_signal_strengths(220);
-            assert_eq!(ss, 3960);
-            assert_eq!(ss_sum, 13140);
-        }
-
-        // During the 20th cycle, register X has the value 21, so the signal strength is 20 * 21 = 420.
-        // (The 20th cycle occurs in the middle of the second addx -1, so the value of register X is the starting value, 1, plus all of the other addx values up to that point: 1 + 15 - 11 + 6 - 3 + 5 - 1 - 8 + 13 + 4 = 21.)
-        // During the 60th cycle, register X has the value 19, so the signal strength is 60 * 19 = 1140.
-        // During the 100th cycle, register X has the value 18, so the signal strength is 100 * 18 = 1800.
-        // During the 140th cycle, register X has the value 21, so the signal strength is 140 * 21 = 2940.
-        // During the 180th cycle, register X has the value 16, so the signal strength is 180 * 16 = 2880.
-        // During the 220th cycle, register X has the value 18, so the signal strength is 220 * 18 = 3960.
-
-        let matrix = get_matrix(cpu, true);
-
-        println!("matrix");
-        print_matrix(matrix);
-        println!("");
-        println!("done");
+        assert_eq!(monkeys[0].get_items(), [79, 98].to_vec());
+        assert_eq!(monkeys[1].get_items(), [54, 65, 75, 74].to_vec());
+        assert_eq!(monkeys[2].get_items(), [79, 60, 97].to_vec());
+        assert_eq!(monkeys[3].get_items(), [74].to_vec());
     }
 }
 
@@ -406,28 +181,6 @@ fn main() -> io::Result<()> {
         v.push(l);
     }
     assert_ne!(0, v.len());
-
-    let mut cpu = Cpu::new();
-    for line in v {
-        let words: Vec<&str> = line.split_whitespace().clone().collect();
-        let mut action = Instructions::Noop;
-        if words[0] == "addx" {
-            let x = words[1].parse::<i32>().unwrap();
-            action = Instructions::AddX(x.clone());
-        }
-        cpu.exec(action);
-    }
-    // One more exec
-    cpu.exec(Instructions::Noop);
-
-    let (_ss, _ss_sum) = cpu.get_signal_strengths(220);
-    println!("Sum of ss is {}", _ss_sum);
-
-    println!("");
-    let matrix = get_matrix(cpu, false);
-    print_matrix(matrix);
-    println!("");
-    println!("done");
 
     Ok(())
 }
