@@ -354,7 +354,7 @@ fn main() -> io::Result<()> {
     }
 
     // Part 2
-    if true {
+    if false {
         monkey_business_test(v.clone(), 10000, true);
     }
 
