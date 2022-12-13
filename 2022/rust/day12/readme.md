@@ -9,18 +9,23 @@ You'd like to reach E, but to save energy, you should do it in as few steps as p
 
 For example:
 
+```
 Sabqponm
 abcryxxl
 accszExk
 acctuvwj
 abdefghi
+```
 Here, you start in the top-left corner; your goal is near the middle. You could start by moving down or right, but eventually you'll need to head toward the e at the bottom. From there, you can spiral around to the goal:
 
+```
 v..v<<<<
 >v.vv<<^
 .>vv>E^^
 ..v>>>^^
 ..>>>>>^
+```
+
 In the above diagram, the symbols indicate whether the path exits each square moving up (^), down (v), left (<), or right (>). The location that should get the best signal is still E, and . marks unvisited squares.
 
 This path reaches the goal in 31 steps, the fewest possible.
