@@ -12,6 +12,39 @@ mod tests {
     #[test]
     fn pathfinding_test() {
         let data: &str = include_str!("../input.txt");
+        let data_bytes = data.bytes();
+        let data_bytes_no_newlines = data_bytes
+        .filter(|b| b != &b'\n');
+        let mut linear_vec_u8: Vec<u8> = data_bytes_no_newlines.map(|b| b.to_ascii_lowercase() - b'a')
+            .collect();
+    
+        let w: usize = data.bytes().position(|b| b == b'\n').unwrap();
+        let h: usize = linear_vec_u8.len() / w;
+        let mut start: usize = data.bytes().position(|b| b == b'S').unwrap();
+        let mut end: usize = data.bytes().position(|b| b == b'E').unwrap();
+        (start, end, linear_vec_u8[start], linear_vec_u8[end]) = (start - start / (w + 1), end - end / (w + 1), 0, 25);
+    
+        let optimal_path: usize = 
+            pathfinding::directed::bfs::bfs(
+                &(end % w, end / w),
+                |(x, y)| -> Vec<(usize, usize)> {
+                    let cur: u8 = linear_vec_u8[y * w + x];
+                    NEXT.iter()
+                        .map(|(xx, yy)| (x.wrapping_add(*xx), y.wrapping_add(*yy)))
+                        .filter(|(x, y)| x < &w && y < &h && linear_vec_u8[y * w + x] >= cur.saturating_sub(1))
+                        .collect::<Vec<_>>()
+                },
+                |&p| p == (start % w, start / w),
+            )
+            .unwrap()
+            .len() - 1;
+        assert_eq!(484, optimal_path);            
+        println!("Optimal path = {}", optimal_path);
+    }
+
+    #[test]
+    fn pathfinding_test_ref() {
+        let data: &str = include_str!("../input.txt");
         let mut map: Vec<_> = data
             .bytes()
             .filter(|b| b != &b'\n')
@@ -41,6 +74,7 @@ mod tests {
         assert_eq!(484, optimal_path);            
         println!("Optimal path = {}", optimal_path);
     }
+
 
     #[test]
     fn monkey_biz() {
