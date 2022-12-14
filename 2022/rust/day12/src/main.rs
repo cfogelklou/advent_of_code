@@ -12,6 +12,24 @@ mod tests {
     const NEXT: [(usize, usize); 4] = [(1, 0), (usize::MAX, 0), (0, 1), (0, usize::MAX)];
     #[test]
     fn pathfinding_test() {
+
+        fn get_successors(linear_vec_u8: &Vec<u8>, y: &usize, w: usize, x: &usize, h: usize) -> Vec<(usize, usize)> {
+            let cur: u8 = linear_vec_u8[y * w + x];
+            let rval: Vec<(usize, usize)> = NEXT.iter()
+                .map(|(xx, yy)| {
+                    // Wrapping (modular) addition. Computes self + rhs, wrapping around at the boundary of the type.
+                    let xxyy = (x.wrapping_add(*xx), y.wrapping_add(*yy));
+                    println!("xx = {}, yy = {}, xxyy = {},{}", xx, yy, xxyy.0, xxyy.1);
+                    return xxyy;
+                })
+                .filter(|(x, y)| {
+                    // Borrow w and h, and use to 
+                    return x < &w && y < &h && linear_vec_u8[y * w + x] >= cur.saturating_sub(1);
+                })
+                .collect::<Vec<_>>();
+            return rval;
+        }
+
         let data: &str = include_str!("../input.txt");
         let data_bytes = data.bytes();
         let data_bytes_no_newlines = data_bytes.filter(|b| b != &b'\n');
@@ -21,12 +39,20 @@ mod tests {
 
         let w: usize = data.bytes().position(|b| b == b'\n').unwrap();
         let h: usize = linear_vec_u8.len() / w;
+
+        // Get position of S and E in the linear vector
         let mut start_pos: usize = data.bytes().position(|b| b == b'S').unwrap();
         let mut end_pos: usize = data.bytes().position(|b| b == b'E').unwrap();
-        start_pos = start_pos - start_pos / (w + 1);
-        end_pos =             end_pos - end_pos / (w + 1);
-        linear_vec_u8[start_pos] = 0;
-        linear_vec_u8[end_pos] = 25;
+
+        // Get row of start and end positions
+        let start_row = start_pos / (w + 1);
+        let end_row = end_pos / (w + 1);
+        start_pos = start_pos - start_row;
+        end_pos =  end_pos - end_row;
+        let aa = 'a' as u8 - 'a' as u8;
+        linear_vec_u8[start_pos] = aa;
+        let zz = 'z' as u8 - 'a' as u8;
+        linear_vec_u8[end_pos] = zz;
         let start_x = end_pos % w;
         let start_y = end_pos / w;
 
@@ -34,13 +60,12 @@ mod tests {
         let optimal_path: usize = pathfinding::directed::bfs::bfs(
             &(start_x, start_y),
             |(x, y)| -> Vec<(usize, usize)> {
-                let cur: u8 = linear_vec_u8[y * w + x];
-                NEXT.iter()
-                    .map(|(xx, yy)| (x.wrapping_add(*xx), y.wrapping_add(*yy)))
-                    .filter(|(x, y)| {
-                        x < &w && y < &h && linear_vec_u8[y * w + x] >= cur.saturating_sub(1)
-                    })
-                    .collect::<Vec<_>>()
+                let new_vec = get_successors(&linear_vec_u8, y, w, x, h);
+                for v in &new_vec {
+                    println!("  Returned vector ({},{})", v.0, v.1);
+                }
+                return new_vec;
+
             },
             |&p| p == (start_pos % w, start_pos / w),
         )
@@ -50,6 +75,10 @@ mod tests {
         assert_eq!(484, optimal_path);
         println!("Optimal path = {}", optimal_path);
     }
+
+
+
+
 
     #[test]
     fn pathfinding_test_ref() {
