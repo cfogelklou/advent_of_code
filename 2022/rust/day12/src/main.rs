@@ -1,7 +1,8 @@
-use std::{ io::{ self }, collections::VecDeque };
+use std::{
+    collections::VecDeque,
+    io::{self},
+};
 mod utils;
-
-
 
 #[cfg(test)]
 mod tests {
@@ -13,32 +14,40 @@ mod tests {
     fn pathfinding_test() {
         let data: &str = include_str!("../input.txt");
         let data_bytes = data.bytes();
-        let data_bytes_no_newlines = data_bytes
-        .filter(|b| b != &b'\n');
-        let mut linear_vec_u8: Vec<u8> = data_bytes_no_newlines.map(|b| b.to_ascii_lowercase() - b'a')
+        let data_bytes_no_newlines = data_bytes.filter(|b| b != &b'\n');
+        let mut linear_vec_u8: Vec<u8> = data_bytes_no_newlines
+            .map(|b| b.to_ascii_lowercase() - b'a')
             .collect();
-    
+
         let w: usize = data.bytes().position(|b| b == b'\n').unwrap();
         let h: usize = linear_vec_u8.len() / w;
-        let mut start: usize = data.bytes().position(|b| b == b'S').unwrap();
-        let mut end: usize = data.bytes().position(|b| b == b'E').unwrap();
-        (start, end, linear_vec_u8[start], linear_vec_u8[end]) = (start - start / (w + 1), end - end / (w + 1), 0, 25);
-    
-        let optimal_path: usize = 
-            pathfinding::directed::bfs::bfs(
-                &(end % w, end / w),
-                |(x, y)| -> Vec<(usize, usize)> {
-                    let cur: u8 = linear_vec_u8[y * w + x];
-                    NEXT.iter()
-                        .map(|(xx, yy)| (x.wrapping_add(*xx), y.wrapping_add(*yy)))
-                        .filter(|(x, y)| x < &w && y < &h && linear_vec_u8[y * w + x] >= cur.saturating_sub(1))
-                        .collect::<Vec<_>>()
-                },
-                |&p| p == (start % w, start / w),
-            )
-            .unwrap()
-            .len() - 1;
-        assert_eq!(484, optimal_path);            
+        let mut start_pos: usize = data.bytes().position(|b| b == b'S').unwrap();
+        let mut end_pos: usize = data.bytes().position(|b| b == b'E').unwrap();
+        start_pos = start_pos - start_pos / (w + 1);
+        end_pos =             end_pos - end_pos / (w + 1);
+        linear_vec_u8[start_pos] = 0;
+        linear_vec_u8[end_pos] = 25;
+        let start_x = end_pos % w;
+        let start_y = end_pos / w;
+
+
+        let optimal_path: usize = pathfinding::directed::bfs::bfs(
+            &(start_x, start_y),
+            |(x, y)| -> Vec<(usize, usize)> {
+                let cur: u8 = linear_vec_u8[y * w + x];
+                NEXT.iter()
+                    .map(|(xx, yy)| (x.wrapping_add(*xx), y.wrapping_add(*yy)))
+                    .filter(|(x, y)| {
+                        x < &w && y < &h && linear_vec_u8[y * w + x] >= cur.saturating_sub(1)
+                    })
+                    .collect::<Vec<_>>()
+            },
+            |&p| p == (start_pos % w, start_pos / w),
+        )
+        .unwrap()
+        .len()
+            - 1;
+        assert_eq!(484, optimal_path);
         println!("Optimal path = {}", optimal_path);
     }
 
@@ -50,49 +59,47 @@ mod tests {
             .filter(|b| b != &b'\n')
             .map(|b| b.to_ascii_lowercase() - b'a')
             .collect();
-    
+
         let w: usize = data.bytes().position(|b| b == b'\n').unwrap();
         let h: usize = map.len() / w;
         let mut start: usize = data.bytes().position(|b| b == b'S').unwrap();
         let mut end: usize = data.bytes().position(|b| b == b'E').unwrap();
         (start, end, map[start], map[end]) = (start - start / (w + 1), end - end / (w + 1), 0, 25);
-    
-        let optimal_path: usize = 
-            pathfinding::directed::bfs::bfs(
-                &(end % w, end / w),
-                |(x, y)| -> Vec<(usize, usize)> {
-                    let cur: u8 = map[y * w + x];
-                    NEXT.iter()
-                        .map(|(xx, yy)| (x.wrapping_add(*xx), y.wrapping_add(*yy)))
-                        .filter(|(x, y)| x < &w && y < &h && map[y * w + x] >= cur.saturating_sub(1))
-                        .collect::<Vec<_>>()
-                },
-                |&p| p == (start % w, start / w),
-            )
-            .unwrap()
-            .len() - 1;
-        assert_eq!(484, optimal_path);            
+
+        let optimal_path: usize = pathfinding::directed::bfs::bfs(
+            &(end % w, end / w),
+            |(x, y)| -> Vec<(usize, usize)> {
+                let cur: u8 = map[y * w + x];
+                NEXT.iter()
+                    .map(|(xx, yy)| (x.wrapping_add(*xx), y.wrapping_add(*yy)))
+                    .filter(|(x, y)| x < &w && y < &h && map[y * w + x] >= cur.saturating_sub(1))
+                    .collect::<Vec<_>>()
+            },
+            |&p| p == (start % w, start / w),
+        )
+        .unwrap()
+        .len()
+            - 1;
+        assert_eq!(484, optimal_path);
         println!("Optimal path = {}", optimal_path);
     }
 
-
     #[test]
     fn monkey_biz() {
-        let raw_string =  String::from("Sabqponm
+        let raw_string = String::from(
+            "Sabqponm
             abcryxxl
             accszExk
             acctuvwj
-            abdefghi");
+            abdefghi",
+        );
         let v: Vec<String> = utils::test_input_to_vec(raw_string, true);
         assert_ne!(0, v.len());
-
 
         //let monkey_business = inspections[0] * inspections[1];
         //println!("Monkey business = {monkey_business}");
         //assert_eq!(monkey_business, 10605);
     }
-
-   
 
     //}
 }
@@ -106,7 +113,7 @@ pub fn main() -> io::Result<()> {
         String::from("input.txt")
     };
     let file = std::io::BufReader::new(
-        std::fs::File::open(<String as AsRef<std::path::Path>>::as_ref(&filename)).unwrap()
+        std::fs::File::open(<String as AsRef<std::path::Path>>::as_ref(&filename)).unwrap(),
     );
     let mut v: Vec<String> = Vec::new();
     for (_, line) in file.lines().enumerate() {
@@ -115,8 +122,6 @@ pub fn main() -> io::Result<()> {
     }
     assert_ne!(0, v.len());
 
-
     //assert_eq!(monkey_business, 10605);
     Ok(())
 }
-
