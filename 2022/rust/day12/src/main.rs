@@ -16,23 +16,22 @@ const ITERS:[(i32,i32);4] = [(-1, 0), (0, 1), (1, 0), (0, -1)];
 struct Pos(i32, i32);
 impl Pos {
     fn successors(self: &Pos, vec2d: &Vec<String>, w: i32) -> Vec<Pos> {
-        let p = self;
-        let curr_p = vec2d[p.1 as usize]
+        let curr_p = vec2d[self.1 as usize]
             .chars()
-            .nth(p.0 as usize)
+            .nth(self.0 as usize)
             .unwrap();
-        //println!("pos {},{}", p.0, p.1);
+        //println!("pos {},{}", self.0, self.1);
         let mut rval: Vec<Pos> = Vec::new();        
         for i in ITERS {
-            let new_y = p.1 + i.1;
-            let new_x = p.0 + i.0;
+            let new_y = self.1 + i.1;
+            let new_x = self.0 + i.0;
             if new_y >= 0 && new_y < (vec2d.len() as i32) && new_x >= 0 && new_x < w {
                 let new_p = vec2d[new_y as usize]
                     .chars()
                     .nth(new_x as usize)
                     .unwrap();
                 //print!("\tComparing new:({},{}) = {}", new_x, new_y, new_p);
-                //print!(" with curr:({},{}) = {}", p.0, p.1, curr_p);
+                //print!(" with curr:({},{}) = {}", self.0, self.1, curr_p);
 
                 if new_p == 'E' {
                     if curr_p == 'z' {
