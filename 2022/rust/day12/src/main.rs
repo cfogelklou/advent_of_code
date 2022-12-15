@@ -55,6 +55,29 @@ impl Pos {
     }
 }
 
+fn get_vec_to_vec2d(vec_in: Vec<String>, start_pos: &mut (i32, i32), mut y: i32, end_pos: &mut (i32, i32), vec2d: &mut Vec<String>) {
+    for y_str in vec_in {
+        let mut y_line = String::from("");
+        let mut x = 0;
+        for c in y_str.chars() {
+            match c {
+                'S' => {
+                    y_line.push('a');
+                    *start_pos = (x, y);
+                }
+                'E' => {
+                    y_line.push('E');
+                    *end_pos = (x, y);
+                }
+                _ => y_line.push(c),
+            }
+            x += 1;
+        }
+        vec2d.push(y_line);
+        y += 1;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
@@ -223,26 +246,7 @@ mod tests {
         let mut start_pos = (-1, -1);
         let mut end_pos = (-1, -1);
         let mut y = 0;
-        for y_str in vec_in {
-            let mut y_line = String::from("");
-            let mut x = 0;
-            for c in y_str.chars() {
-                match c {
-                    'S' => {
-                        y_line.push('a');
-                        start_pos = (x, y);
-                    }
-                    'E' => {
-                        y_line.push('E');
-                        end_pos = (x, y);
-                    }
-                    _ => y_line.push(c),
-                }
-                x += 1;
-            }
-            vec2d.push(y_line);
-            y += 1;
-        }
+        get_vec_to_vec2d(vec_in, &mut start_pos, y, &mut end_pos, &mut vec2d);
 
         let result = pathfinding::directed::bfs::bfs(
             &Pos(start_pos.0, start_pos.1),
@@ -271,6 +275,8 @@ mod tests {
         println!("h = {}", vec2d.len());
     }
 
+
+
     //}
 }
 
@@ -285,12 +291,45 @@ pub fn main() -> io::Result<()> {
     let file = std::io::BufReader::new(
         std::fs::File::open(<String as AsRef<std::path::Path>>::as_ref(&filename)).unwrap()
     );
-    let mut v: Vec<String> = Vec::new();
+    let mut vec_in: Vec<String> = Vec::new();
     for (_, line) in file.lines().enumerate() {
         let l: String = line.unwrap();
-        v.push(l);
+        vec_in.push(l);
     }
-    assert_ne!(0, v.len());
+    assert_ne!(0, vec_in.len());
+    let width = vec_in[0].len();
+
+    let mut vec2d: Vec<String> = Vec::new();
+    let mut start_pos = (-1, -1);
+    let mut end_pos = (-1, -1);
+    let y = 0;
+    get_vec_to_vec2d(vec_in, &mut start_pos, y, &mut end_pos, &mut vec2d);
+
+    let result = pathfinding::directed::bfs::bfs(
+        &Pos(start_pos.0, start_pos.1),
+        |p| p.successors(&vec2d, width as i32),
+        |p| {
+            println!("\t\tchecking success for {},{}", p.0, p.1);
+            return *p == Pos(end_pos.0, end_pos.1);
+        }
+    );
+
+    //let expected = vec![Pos(0, 0), Pos(0, 1), Pos(1, 1), Pos(1, 2)];
+
+    match result {
+        None => {
+            println!("No result returned");
+            assert!(false);
+        }
+        Some(path) => {
+            println!("Got path with len {}", path.len()-1);
+            //assert!(31 == path.len() - 1);
+        }
+    }
+
+    println!("start_pos = {},{}", start_pos.0, start_pos.1);
+    println!("end_pos = {},{}", end_pos.0, end_pos.1);
+    println!("h = {}", vec2d.len());
 
     //assert_eq!(monkey_business, 10605);
     Ok(())
