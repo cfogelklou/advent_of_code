@@ -1,4 +1,4 @@
-use std::{ collections::VecDeque, io::{ self } };
+use std::{ io::{ self } };
 mod utils;
 
 /*
@@ -21,7 +21,7 @@ impl Pos {
             .nth(self.0 as usize)
             .unwrap();
         //println!("pos {},{}", self.0, self.1);
-        let mut rval: Vec<Pos> = Vec::new();        
+        let mut possible_moves: Vec<Pos> = Vec::new();        
         for i in ITERS {
             let new_y = self.1 + i.1;
             let new_x = self.0 + i.0;
@@ -36,28 +36,28 @@ impl Pos {
                 if new_p == 'E' {
                     if curr_p == 'z' {
                         //print!(" ok!\n");
-                        rval.push(Pos(new_x, new_y));
+                        possible_moves.push(Pos(new_x, new_y));
                     }
                 } else {
                     if (new_p as i32) <= (curr_p as i32) + 1 {
                         //print!(" ok!\n");
-                        rval.push(Pos(new_x, new_y));
+                        possible_moves.push(Pos(new_x, new_y));
                     }
                 }
             }
         }
         //println!("\trval has len {}", rval.len());
-        return rval;
+        return possible_moves;
     }
 }
 
 fn get_vec_to_vec2d(
     vec_in: Vec<String>,
     start_pos: &mut (i32, i32),
-    mut y: i32,
     end_pos: &mut (i32, i32),
     vec2d: &mut Vec<String>
 ) -> Vec<Pos> {
+    let mut y = 0;
     let mut rval: Vec<Pos> = Vec::new();
     for y_str in vec_in {
         let mut y_line = String::from("");
@@ -235,7 +235,7 @@ mod tests {
     /// assert_eq!(result.expect("no path found").len(), 5);
 
     #[test]
-    fn monkey_biz() {
+    fn pathfinding_test_3() {
         let raw_string = String::from(
             "Sabqponm
             abcryxxl
@@ -253,8 +253,7 @@ mod tests {
         let mut vec2d: Vec<String> = Vec::new();
         let mut start_pos = (-1, -1);
         let mut end_pos = (-1, -1);
-        let y = 0;
-        get_vec_to_vec2d(vec_in, &mut start_pos, y, &mut end_pos, &mut vec2d);
+        get_vec_to_vec2d(vec_in, &mut start_pos, &mut end_pos, &mut vec2d);
 
         let result = pathfinding::directed::bfs::bfs(
             &Pos(start_pos.0, start_pos.1),
@@ -306,8 +305,9 @@ pub fn main() -> io::Result<()> {
     let mut vec2d: Vec<String> = Vec::new();
     let mut start_pos = (-1, -1);
     let mut end_pos = (-1, -1);
-    let y = 0;
-    let all_as = get_vec_to_vec2d(vec_in, &mut start_pos, y, &mut end_pos, &mut vec2d);
+    
+    // all_as is all of the possible start positions
+    let all_as = get_vec_to_vec2d(vec_in, &mut start_pos, &mut end_pos, &mut vec2d);
 
     let result = pathfinding::directed::bfs::bfs(
         &Pos(start_pos.0, start_pos.1),
