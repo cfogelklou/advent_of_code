@@ -1,14 +1,18 @@
 use std::{ collections::VecDeque, io::{ self } };
 mod utils;
 
-
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 struct Pos(i32, i32);
 impl Pos {
-    fn successors(self: &Pos, vec2d: &Vec<Vec<i32>>, w: i32) -> Vec<Pos> {
+    fn successors(self: &Pos, vec2d: &Vec<String>, w: i32) -> Vec<Pos> {
         let p = self;
-        let y_line = &vec2d[p.1 as usize]; 
-        let curr_p = &y_line[p.0 as usize];
+        let curr_p = vec2d[p.1 as usize]
+            .chars()
+            .nth(p.0 as usize)
+            .unwrap();
+        if curr_p == 'v' {
+            println!("almost");
+        }
         println!("pos {},{}", p.0, p.1);
         let mut rval: Vec<Pos> = Vec::new();
         let iters = vec![(-1, 0), (0, 1), (1, 0), (0, -1)];
@@ -16,15 +20,33 @@ impl Pos {
             let new_y = p.1 + i.1;
             let new_x = p.0 + i.0;
             if new_y >= 0 && new_y < (vec2d.len() as i32) && new_x >= 0 && new_x < w {
-                let y2 = &vec2d[new_y as usize];
-                let new_p = y2[new_x as usize];
-                print!("\tComparing new:({},{}) = {} with curr:({},{}) = {}", new_x, new_y, new_p, p.0, p.1, curr_p);
-                if (new_p <= (curr_p + 1)) {
-                    print!(" ok!\n");
-                    rval.push(Pos(new_x, new_y));
-                }
-                else {
-                    print!(" nope!\n");
+                let new_p = vec2d[new_y as usize]
+                    .chars()
+                    .nth(new_x as usize)
+                    .unwrap();
+                print!(
+                    "\tComparing new:({},{}) = {} with curr:({},{}) = {}",
+                    new_x,
+                    new_y,
+                    new_p,
+                    p.0,
+                    p.1,
+                    curr_p
+                );
+                if new_p == 'E' {
+                    if curr_p == 'z' {
+                        print!(" ok!\n");
+                        rval.push(Pos(new_x, new_y));
+                    } else {
+                        print!(" nope!\n");
+                    }
+                } else {
+                    if (new_p as i32) <= (curr_p as i32) + 1 {
+                        print!(" ok!\n");
+                        rval.push(Pos(new_x, new_y));
+                    } else {
+                        print!(" nope!\n");
+                    }
                 }
             }
         }
@@ -32,7 +54,6 @@ impl Pos {
         return rval;
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -178,16 +199,12 @@ mod tests {
         println!("Optimal path = {}", optimal_path);
     }
 
-
-
     /// static GOAL: Pos = Pos(4, 6);
     /// let result = bfs(&Pos(1, 1), |p| p.successors(), |p| *p == GOAL);
     /// assert_eq!(result.expect("no path found").len(), 5);
 
     #[test]
     fn monkey_biz() {
-
-
         let raw_string = String::from(
             "Sabqponm
             abcryxxl
@@ -202,24 +219,24 @@ mod tests {
         let height = vec_in.len();
         assert_eq!(5, height);
 
-        let mut vec2d: Vec<Vec<i32>> = Vec::new();
+        let mut vec2d: Vec<String> = Vec::new();
         let mut start_pos = (-1, -1);
         let mut end_pos = (-1, -1);
         let mut y = 0;
         for y_str in vec_in {
-            let mut y_line: Vec<i32> = Vec::new();
+            let mut y_line = String::from("");
             let mut x = 0;
             for c in y_str.chars() {
                 match c {
                     'S' => {
-                        y_line.push(0);
+                        y_line.push('a');
                         start_pos = (x, y);
                     }
                     'E' => {
-                        y_line.push(26);
+                        y_line.push('E');
                         end_pos = (x, y);
                     }
-                    _ => y_line.push((c as i32) - ('a' as i32) + 1),
+                    _ => y_line.push(c),
                 }
                 x += 1;
             }
@@ -236,7 +253,7 @@ mod tests {
             }
         );
 
-        let expected = vec![Pos(0,0),Pos(0,1),Pos(1,1),Pos(1,2)];
+        let expected = vec![Pos(0, 0), Pos(0, 1), Pos(1, 1), Pos(1, 2)];
 
         match result {
             None => {
@@ -245,7 +262,7 @@ mod tests {
             }
             Some(path) => {
                 println!("Got path with len {}", path.len());
-                assert!(31 == path.len()-1);
+                assert!(31 == path.len() - 1);
             }
         }
 
