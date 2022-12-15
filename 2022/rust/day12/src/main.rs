@@ -10,10 +10,7 @@ impl Pos {
             .chars()
             .nth(p.0 as usize)
             .unwrap();
-        if curr_p == 'v' {
-            println!("almost");
-        }
-        println!("pos {},{}", p.0, p.1);
+        //println!("pos {},{}", p.0, p.1);
         let mut rval: Vec<Pos> = Vec::new();
         let iters = vec![(-1, 0), (0, 1), (1, 0), (0, -1)];
         for i in iters {
@@ -24,38 +21,35 @@ impl Pos {
                     .chars()
                     .nth(new_x as usize)
                     .unwrap();
-                print!(
-                    "\tComparing new:({},{}) = {} with curr:({},{}) = {}",
-                    new_x,
-                    new_y,
-                    new_p,
-                    p.0,
-                    p.1,
-                    curr_p
-                );
+                //print!("\tComparing new:({},{}) = {}", new_x, new_y, new_p);
+                //print!(" with curr:({},{}) = {}", p.0, p.1, curr_p);
+
                 if new_p == 'E' {
                     if curr_p == 'z' {
-                        print!(" ok!\n");
+                        //print!(" ok!\n");
                         rval.push(Pos(new_x, new_y));
-                    } else {
-                        print!(" nope!\n");
                     }
                 } else {
                     if (new_p as i32) <= (curr_p as i32) + 1 {
-                        print!(" ok!\n");
+                        //print!(" ok!\n");
                         rval.push(Pos(new_x, new_y));
-                    } else {
-                        print!(" nope!\n");
                     }
                 }
             }
         }
-        println!("\trval has len {}", rval.len());
+        //println!("\trval has len {}", rval.len());
         return rval;
     }
 }
 
-fn get_vec_to_vec2d(vec_in: Vec<String>, start_pos: &mut (i32, i32), mut y: i32, end_pos: &mut (i32, i32), vec2d: &mut Vec<String>) {
+fn get_vec_to_vec2d(
+    vec_in: Vec<String>,
+    start_pos: &mut (i32, i32),
+    mut y: i32,
+    end_pos: &mut (i32, i32),
+    vec2d: &mut Vec<String>
+) -> Vec<Pos> {
+    let mut rval: Vec<Pos> = Vec::new();
     for y_str in vec_in {
         let mut y_line = String::from("");
         let mut x = 0;
@@ -69,6 +63,10 @@ fn get_vec_to_vec2d(vec_in: Vec<String>, start_pos: &mut (i32, i32), mut y: i32,
                     y_line.push('E');
                     *end_pos = (x, y);
                 }
+                'a' => {
+                    rval.push(Pos(x, y));
+                    y_line.push(c);
+                }
                 _ => y_line.push(c),
             }
             x += 1;
@@ -76,6 +74,7 @@ fn get_vec_to_vec2d(vec_in: Vec<String>, start_pos: &mut (i32, i32), mut y: i32,
         vec2d.push(y_line);
         y += 1;
     }
+    return rval;
 }
 
 #[cfg(test)]
@@ -245,7 +244,7 @@ mod tests {
         let mut vec2d: Vec<String> = Vec::new();
         let mut start_pos = (-1, -1);
         let mut end_pos = (-1, -1);
-        let mut y = 0;
+        let y = 0;
         get_vec_to_vec2d(vec_in, &mut start_pos, y, &mut end_pos, &mut vec2d);
 
         let result = pathfinding::directed::bfs::bfs(
@@ -256,8 +255,6 @@ mod tests {
                 return *p == Pos(end_pos.0, end_pos.1);
             }
         );
-
-        let expected = vec![Pos(0, 0), Pos(0, 1), Pos(1, 1), Pos(1, 2)];
 
         match result {
             None => {
@@ -274,8 +271,6 @@ mod tests {
         println!("end_pos = {},{}", end_pos.0, end_pos.1);
         println!("h = {}", vec2d.len());
     }
-
-
 
     //}
 }
@@ -303,7 +298,7 @@ pub fn main() -> io::Result<()> {
     let mut start_pos = (-1, -1);
     let mut end_pos = (-1, -1);
     let y = 0;
-    get_vec_to_vec2d(vec_in, &mut start_pos, y, &mut end_pos, &mut vec2d);
+    let all_as = get_vec_to_vec2d(vec_in, &mut start_pos, y, &mut end_pos, &mut vec2d);
 
     let result = pathfinding::directed::bfs::bfs(
         &Pos(start_pos.0, start_pos.1),
@@ -314,22 +309,43 @@ pub fn main() -> io::Result<()> {
         }
     );
 
-    //let expected = vec![Pos(0, 0), Pos(0, 1), Pos(1, 1), Pos(1, 2)];
-
     match result {
         None => {
             println!("No result returned");
             assert!(false);
         }
         Some(path) => {
-            println!("Got path with len {}", path.len()-1);
+            println!("Got path with len {}", path.len() - 1);
             //assert!(31 == path.len() - 1);
         }
     }
 
-    println!("start_pos = {},{}", start_pos.0, start_pos.1);
-    println!("end_pos = {},{}", end_pos.0, end_pos.1);
-    println!("h = {}", vec2d.len());
+    // Part 2
+    {
+        let mut path_lens: Vec<usize> = Vec::new();
+        for a in all_as {
+            start_pos = (a.0, a.1);
+            let result = pathfinding::directed::bfs::bfs(
+                &Pos(start_pos.0, start_pos.1),
+                |p| p.successors(&vec2d, width as i32),
+                |p| {
+                    //println!("\t\tchecking success for {},{}", p.0, p.1);
+                    return *p == Pos(end_pos.0, end_pos.1);
+                }
+            );
+            match result {
+                None => {
+                    //println!("No result returned");
+                }
+                Some(path) => {
+                    println!("Got path with len {}", path.len() - 1);
+                    path_lens.push(path.len() - 1);
+                }
+            }
+        }
+        path_lens.sort();
+        println!("Got minpath with len {}", path_lens[0]);
+    }
 
     //assert_eq!(monkey_business, 10605);
     Ok(())
