@@ -1,6 +1,17 @@
 use std::{ collections::VecDeque, io::{ self } };
 mod utils;
 
+/*
+        const NEXT: [(usize, usize); 4] = [
+            (1, 0),
+            (usize::MAX, 0),
+            (0, 1),
+            (0, usize::MAX),
+        ];
+*/
+
+const ITERS:[(i32,i32);4] = [(-1, 0), (0, 1), (1, 0), (0, -1)];
+
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 struct Pos(i32, i32);
 impl Pos {
@@ -11,9 +22,8 @@ impl Pos {
             .nth(p.0 as usize)
             .unwrap();
         //println!("pos {},{}", p.0, p.1);
-        let mut rval: Vec<Pos> = Vec::new();
-        let iters = vec![(-1, 0), (0, 1), (1, 0), (0, -1)];
-        for i in iters {
+        let mut rval: Vec<Pos> = Vec::new();        
+        for i in ITERS {
             let new_y = p.1 + i.1;
             let new_x = p.0 + i.0;
             if new_y >= 0 && new_y < (vec2d.len() as i32) && new_x >= 0 && new_x < w {
