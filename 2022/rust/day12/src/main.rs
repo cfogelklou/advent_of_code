@@ -1,6 +1,39 @@
 use std::{ collections::VecDeque, io::{ self } };
 mod utils;
 
+
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+struct Pos(i32, i32);
+impl Pos {
+    fn successors(self: &Pos, vec2d: &Vec<Vec<i32>>, w: i32) -> Vec<Pos> {
+        let p = self;
+        let y_line = &vec2d[p.1 as usize]; 
+        let curr_p = &y_line[p.0 as usize];
+        println!("pos {},{}", p.0, p.1);
+        let mut rval: Vec<Pos> = Vec::new();
+        let iters = vec![(-1, 0), (0, 1), (1, 0), (0, -1)];
+        for i in iters {
+            let new_y = p.1 + i.1;
+            let new_x = p.0 + i.0;
+            if new_y >= 0 && new_y < (vec2d.len() as i32) && new_x >= 0 && new_x < w {
+                let y2 = &vec2d[new_y as usize];
+                let new_p = y2[new_x as usize];
+                print!("\tComparing new:({},{}) = {} with curr:({},{}) = {}", new_x, new_y, new_p, p.0, p.1, curr_p);
+                if (new_p <= (curr_p + 1)) {
+                    print!(" ok!\n");
+                    rval.push(Pos(new_x, new_y));
+                }
+                else {
+                    print!(" nope!\n");
+                }
+            }
+        }
+        println!("\trval has len {}", rval.len());
+        return rval;
+    }
+}
+
+
 #[cfg(test)]
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
@@ -145,23 +178,7 @@ mod tests {
         println!("Optimal path = {}", optimal_path);
     }
 
-    #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-    struct Pos(i32, i32);
-    impl Pos {
-        fn successors(&self) -> Vec<Pos> {
-            let &Pos(x, y) = self;
-            vec![
-                Pos(x + 1, y + 2),
-                Pos(x + 1, y - 2),
-                Pos(x - 1, y + 2),
-                Pos(x - 1, y - 2),
-                Pos(x + 2, y + 1),
-                Pos(x + 2, y - 1),
-                Pos(x - 2, y + 1),
-                Pos(x - 2, y - 1)
-            ]
-        }
-    }
+
 
     /// static GOAL: Pos = Pos(4, 6);
     /// let result = bfs(&Pos(1, 1), |p| p.successors(), |p| *p == GOAL);
@@ -169,25 +186,7 @@ mod tests {
 
     #[test]
     fn monkey_biz() {
-        fn successors(p: &Pos, vec2d: &Vec<Vec<i32>>, w: i32) -> Vec<Pos> {
-            let curr_p = vec2d[p.1 as usize][p.0 as usize];
-            println!("pos {},{}", p.0, p.1);
-            let mut rval: Vec<Pos> = Vec::new();
-            let iters = vec![(-1, 0), (1, 0), (0, -1), (0, 1)];
-            for i in iters {
-                let new_y = p.1 + i.1;
-                let new_x = p.0 + i.0;
-                if new_y >= 0 && new_y < (vec2d.len() as i32) && new_x >= 0 && new_x < w {
-                    let new_p = vec2d[new_y as usize][new_x as usize];
-                    println!("\tComparing new:({},{}) = {} with curr:({},{}) = {}", new_x, new_y, new_p, p.0, p.1, curr_p);
-                    if (new_p <= (curr_p + 1)) || (new_p == 100) {
-                        rval.push(Pos(new_x, new_y));
-                    }
-                }
-            }
 
-            return rval;
-        }
 
         let raw_string = String::from(
             "Sabqponm
@@ -217,7 +216,7 @@ mod tests {
                         start_pos = (x, y);
                     }
                     'E' => {
-                        y_line.push(100);
+                        y_line.push(26);
                         end_pos = (x, y);
                     }
                     _ => y_line.push((c as i32) - ('a' as i32) + 1),
@@ -228,21 +227,25 @@ mod tests {
             y += 1;
         }
 
-        let GOAL: Pos = Pos(end_pos.0, end_pos.1);
         let result = pathfinding::directed::bfs::bfs(
             &Pos(start_pos.0, start_pos.1),
-            |p| successors(p, &vec2d, width as i32),
+            |p| p.successors(&vec2d, width as i32),
             |p| {
-                println!("checking success for {},{}", p.0, p.1);
-                return *p == GOAL;
+                println!("\t\tchecking success for {},{}", p.0, p.1);
+                return *p == Pos(end_pos.0, end_pos.1);
             }
         );
+
+        let expected = vec![Pos(0,0),Pos(0,1),Pos(1,1),Pos(1,2)];
+
         match result {
             None => {
                 println!("No result returned");
+                assert!(false);
             }
             Some(path) => {
                 println!("Got path with len {}", path.len());
+                assert!(31 == path.len()-1);
             }
         }
 
