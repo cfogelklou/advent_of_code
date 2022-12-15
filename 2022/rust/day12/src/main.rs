@@ -169,12 +169,23 @@ mod tests {
 
     #[test]
     fn monkey_biz() {
+        fn successors(p: &Pos, vec2d: &Vec<Vec<i32>>, w: i32) -> Vec<Pos> {
+            let curr_p = vec2d[p.1 as usize][p.0 as usize];
+            println!("pos {},{}", p.0, p.1);
+            let mut rval: Vec<Pos> = Vec::new();
+            let iters = vec![(-1, 0), (1, 0), (0, -1), (0, 1)];
+            for i in iters {
+                let new_y = p.1 + i.1;
+                let new_x = p.0 + i.0;
+                if new_y >= 0 && new_y < (vec2d.len() as i32) && new_x >= 0 && new_x < w {
+                    let new_p = vec2d[new_y as usize][new_x as usize];
+                    println!("\tComparing new:({},{}) = {} with curr:({},{}) = {}", new_x, new_y, new_p, p.0, p.1, curr_p);
+                    if (new_p <= (curr_p + 1)) || (new_p == 100) {
+                        rval.push(Pos(new_x, new_y));
+                    }
+                }
+            }
 
-        fn successors(p: &Pos, vec2d: &Vec<Vec<i32>>) -> Vec<Pos> {
-            let &Pos(x, y) = p;
-            let mut rval:Vec<Pos> = Vec::new();
-            
-            
             return rval;
         }
 
@@ -192,7 +203,7 @@ mod tests {
         let height = vec_in.len();
         assert_eq!(5, height);
 
-        let vec2d: Vec<Vec<i32>> = Vec::new();
+        let mut vec2d: Vec<Vec<i32>> = Vec::new();
         let mut start_pos = (-1, -1);
         let mut end_pos = (-1, -1);
         let mut y = 0;
@@ -213,14 +224,28 @@ mod tests {
                 }
                 x += 1;
             }
+            vec2d.push(y_line);
             y += 1;
         }
 
         let GOAL: Pos = Pos(end_pos.0, end_pos.1);
         let result = pathfinding::directed::bfs::bfs(
-            &Pos(start_pos.0, start_pos.1), 
-            |p| successors(p, &vec2d), |p| *p == GOAL);
-        
+            &Pos(start_pos.0, start_pos.1),
+            |p| successors(p, &vec2d, width as i32),
+            |p| {
+                println!("checking success for {},{}", p.0, p.1);
+                return *p == GOAL;
+            }
+        );
+        match result {
+            None => {
+                println!("No result returned");
+            }
+            Some(path) => {
+                println!("Got path with len {}", path.len());
+            }
+        }
+
         println!("start_pos = {},{}", start_pos.0, start_pos.1);
         println!("end_pos = {},{}", end_pos.0, end_pos.1);
         println!("h = {}", vec2d.len());
