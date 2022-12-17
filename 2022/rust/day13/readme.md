@@ -7,6 +7,7 @@ Your list consists of pairs of packets; pairs are separated by a blank line. You
 
 For example:
 
+```
 [1,1,3,1,1]
 [1,1,5,1,1]
 
@@ -30,6 +31,7 @@ For example:
 
 [1,[2,[3,[4,[5,6,7]]]],8,9]
 [1,[2,[3,[4,[5,6,0]]]],8,9]
+```
 Packet data consists of lists and integers. Each list starts with [, ends with ], and contains zero or more comma-separated values (either integers or other lists). Each packet is always a list and appears on its own line.
 
 When comparing two values, the first value is called left and the second value is called right. Then:
@@ -39,6 +41,7 @@ If both values are lists, compare the first value of each list, then the second 
 If exactly one value is an integer, convert the integer to a list which contains that integer as its only value, then retry the comparison. For example, if comparing [0,0,0] and 2, convert the right value to [2] (a list containing 2); the result is then found by instead comparing [0,0,0] and [2].
 Using these rules, you can determine which of the pairs in the example are in the right order:
 
+```
 == Pair 1 ==
 - Compare [1,1,3,1,1] vs [1,1,5,1,1]
   - Compare 1 vs 1
@@ -103,6 +106,8 @@ Using these rules, you can determine which of the pairs in the example are in th
           - Compare 6 vs 6
           - Compare 7 vs 0
             - Right side is smaller, so inputs are not in the right order
+
+```
 What are the indices of the pairs that are already in the right order? (The first pair has index 1, the second pair has index 2, and so on.) In the above example, the pairs in the right order are 1, 2, 4, and 6; the sum of these indices is 13.
 
 Determine which pairs of packets are already in the right order. What is the sum of the indices of those pairs?
