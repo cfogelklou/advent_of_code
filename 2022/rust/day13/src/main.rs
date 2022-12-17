@@ -1,4 +1,4 @@
-use std::{ io::{ self }, cmp };
+use std::{ io::{ self } };
 //use std::array;
 mod utils;
 use std::cmp::Ordering;
@@ -142,20 +142,18 @@ fn compare_packets(p1: &ArrElement, p2: &ArrElement) -> Ordering {
 }
 
 #[allow(dead_code)]
-fn process_pairs_and_get_correct_indices(arrays: &Vec<ArrElement>) ->Vec<usize>{
-    let mut indices:Vec<usize> = Vec::new();
+fn process_pairs_and_get_correct_indices(arrays: &Vec<ArrElement>) -> Vec<usize> {
+    let mut indices: Vec<usize> = Vec::new();
     for i in (0..arrays.len()).step_by(2) {
         let res = compare_packets(&arrays[i + 0], &arrays[i + 1]);
         let pair_num = i / 2 + 1;
         match res {
             Ordering::Equal => {
-                println!("p1 == p2");           
-        
+                println!("p1 == p2");
             }
             Ordering::Less => {
                 println!("p1 < p2: Correct order");
                 indices.push(pair_num);
-
             }
             Ordering::Greater => {
                 println!("p1 > p2: Wrong order");
@@ -167,8 +165,6 @@ fn process_pairs_and_get_correct_indices(arrays: &Vec<ArrElement>) ->Vec<usize>{
 
 #[cfg(test)]
 mod tests {
-
-
     // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;
 
@@ -200,22 +196,16 @@ mod tests {
         [1,[2,[3,[4,[5,6,0]]]],8,9]"
         );
 
-        let arrays= parse_string_to_arrays(&data_bytes);
+        let arrays = parse_string_to_arrays(&data_bytes);
 
         let indices = process_pairs_and_get_correct_indices(&arrays);
-        assert_eq!(indices, [1,2,4,6]);
-        let sum:usize = indices.iter().sum();
+        assert_eq!(indices, [1, 2, 4, 6]);
+        let sum: usize = indices.iter().sum();
         assert_eq!(13, sum);
-
     }
-
-
-
-
 }
 
 pub fn main() -> io::Result<()> {
-    use std::io::BufRead;
 
     let filename = if std::env::args().len() >= 2 {
         std::env::args().nth(1).unwrap()
@@ -224,13 +214,14 @@ pub fn main() -> io::Result<()> {
     };
     let data_bytes = std::fs::read_to_string(filename).unwrap();
 
-    let arrays= parse_string_to_arrays(&data_bytes);
+    let arrays = parse_string_to_arrays(&data_bytes);
 
     let indices = process_pairs_and_get_correct_indices(&arrays);
     //assert_eq!(indices, [1,2,4,6]);
-    let sum:usize = indices.iter().sum();
+    let sum: usize = indices.iter().sum();
     //assert_eq!(13, sum);
     println!("Sum of indices = {}", sum);
+    assert_eq!(sum, 6656);
 
     // Now part 2
     {
@@ -243,16 +234,21 @@ pub fn main() -> io::Result<()> {
 
         let mut prod = 1;
         let i2 = arrays2.binary_search_by(|arr| compare_packets(arr, &d2));
-        match (i2) {
-            Ok(val) => {prod *= (1+val);},
-            _ => {},
+        match i2 {
+            Ok(val) => {
+                prod *= 1 + val;
+            }
+            _ => {}
         }
 
         let i6 = arrays2.binary_search_by(|arr| compare_packets(arr, &d6));
-        match (i6) {
-            Ok(val) => {prod *= (1+val);},
-            _ => {},
+        match i6 {
+            Ok(val) => {
+                prod *= 1 + val;
+            }
+            _ => {}
         }
+        assert_eq!(prod, 19716);
 
         println!("Prod of indices = {}", prod);
     }
