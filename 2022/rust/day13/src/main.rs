@@ -232,22 +232,11 @@ pub fn main() -> io::Result<()> {
         arrays2.push(d6.clone());
         arrays2.sort_by(compare_packets);
 
-        let mut prod = 1;
-        let i2 = arrays2.binary_search_by(|arr| compare_packets(arr, &d2));
-        match i2 {
-            Ok(val) => {
-                prod *= 1 + val;
-            }
-            _ => {}
-        }
+        
+        let i2 = 1 + arrays2.binary_search_by(|arr| compare_packets(arr, &d2)).ok().unwrap();
+        let i6 = 1 + arrays2.binary_search_by(|arr| compare_packets(arr, &d6)).ok().unwrap();
 
-        let i6 = arrays2.binary_search_by(|arr| compare_packets(arr, &d6));
-        match i6 {
-            Ok(val) => {
-                prod *= 1 + val;
-            }
-            _ => {}
-        }
+        let prod = i2*i6;
         assert_eq!(prod, 19716);
 
         println!("Prod of indices = {}", prod);
