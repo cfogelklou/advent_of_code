@@ -62,7 +62,7 @@ fn consume_this_array(data_bytes: &Vec<char>, i: &mut usize) -> Option<ArrElemen
 }
 
 #[allow(dead_code)]
-fn parse_string_to_arrays(data_bytes: String) -> Vec<ArrElement> {
+fn parse_string_to_arrays(data_bytes: &String) -> Vec<ArrElement> {
     let mut arrays: Vec<ArrElement> = Vec::new();
     let data_bytes_no_newlines: Vec<char> = data_bytes
         .clone()
@@ -142,7 +142,7 @@ fn compare_packets(p1: &ArrElement, p2: &ArrElement) -> Ordering {
 }
 
 #[allow(dead_code)]
-fn process_pairs_and_get_correct_indices(arrays: Vec<ArrElement>) ->Vec<usize>{
+fn process_pairs_and_get_correct_indices(arrays: &Vec<ArrElement>) ->Vec<usize>{
     let mut indices:Vec<usize> = Vec::new();
     for i in (0..arrays.len()).step_by(2) {
         let res = compare_packets(&arrays[i + 0], &arrays[i + 1]);
@@ -200,9 +200,9 @@ mod tests {
         [1,[2,[3,[4,[5,6,0]]]],8,9]"
         );
 
-        let arrays= parse_string_to_arrays(data_bytes);
+        let arrays= parse_string_to_arrays(&data_bytes);
 
-        let indices = process_pairs_and_get_correct_indices(arrays);
+        let indices = process_pairs_and_get_correct_indices(&arrays);
         assert_eq!(indices, [1,2,4,6]);
         let sum:usize = indices.iter().sum();
         assert_eq!(13, sum);
@@ -222,16 +222,40 @@ pub fn main() -> io::Result<()> {
     } else {
         String::from("input.txt")
     };
-    let file = std::io::BufReader::new(
-        std::fs::File::open(<String as AsRef<std::path::Path>>::as_ref(&filename)).unwrap()
-    );
-    let mut vec_in: Vec<String> = Vec::new();
-    for (_, line) in file.lines().enumerate() {
-        let l: String = line.unwrap();
-        vec_in.push(l);
-    }
-    assert_ne!(0, vec_in.len());
+    let data_bytes = std::fs::read_to_string(filename).unwrap();
 
-    //assert_eq!(monkey_business, 10605);
+    let arrays= parse_string_to_arrays(&data_bytes);
+
+    let indices = process_pairs_and_get_correct_indices(&arrays);
+    //assert_eq!(indices, [1,2,4,6]);
+    let sum:usize = indices.iter().sum();
+    //assert_eq!(13, sum);
+    println!("Sum of indices = {}", sum);
+
+    // Now part 2
+    {
+        let mut arrays2 = arrays.clone();
+        let d2 = ArrElement::Arr(vec![ArrElement::Integer(2)]);
+        let d6 = ArrElement::Arr(vec![ArrElement::Integer(6)]);
+        arrays2.push(d2.clone());
+        arrays2.push(d6.clone());
+        arrays2.sort_by(compare_packets);
+
+        let mut prod = 1;
+        let i2 = arrays2.binary_search_by(|arr| compare_packets(arr, &d2));
+        match (i2) {
+            Ok(val) => {prod *= (1+val);},
+            _ => {},
+        }
+
+        let i6 = arrays2.binary_search_by(|arr| compare_packets(arr, &d6));
+        match (i6) {
+            Ok(val) => {prod *= (1+val);},
+            _ => {},
+        }
+
+        println!("Prod of indices = {}", prod);
+    }
+
     Ok(())
 }
