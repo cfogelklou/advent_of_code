@@ -1,4 +1,5 @@
 use std::{ io::{ self }, cmp };
+//use std::array;
 mod utils;
 use std::cmp::Ordering;
 
@@ -61,6 +62,35 @@ fn consume_this_array(data_bytes: &Vec<char>, i: &mut usize) -> Option<ArrElemen
 }
 
 #[allow(dead_code)]
+fn parse_string_to_arrays(data_bytes: String) -> Vec<ArrElement> {
+    let mut arrays: Vec<ArrElement> = Vec::new();
+    let data_bytes_no_newlines: Vec<char> = data_bytes
+        .clone()
+        .chars()
+        .filter(|b| *b != '\n' && *b != ' ')
+        .collect();
+    let mut i = 0;
+    while i < data_bytes_no_newlines.len() {
+        let c: char = data_bytes_no_newlines[i];
+        i += 1;
+        if c == '[' {
+            let elem = consume_this_array(&data_bytes_no_newlines, &mut i);
+            match elem {
+                Some(a) =>
+                    match a {
+                        ArrElement::Arr(arr) => {
+                            arrays.push(ArrElement::Arr(arr));
+                        }
+                        _ => {}
+                    }
+                _ => {}
+            }
+        }
+    }
+    return arrays;
+}
+
+#[allow(dead_code)]
 fn compare_packets(p1: &ArrElement, p2: &ArrElement) -> Ordering {
     match (p1, p2) {
         (&ArrElement::Integer(l_int), &ArrElement::Integer(r_int)) => {
@@ -111,16 +141,40 @@ fn compare_packets(p1: &ArrElement, p2: &ArrElement) -> Ordering {
     } // match
 }
 
+#[allow(dead_code)]
+fn process_pairs_and_get_correct_indices(arrays: Vec<ArrElement>) ->Vec<usize>{
+    let mut indices:Vec<usize> = Vec::new();
+    for i in (0..arrays.len()).step_by(2) {
+        let res = compare_packets(&arrays[i + 0], &arrays[i + 1]);
+        let pair_num = i / 2 + 1;
+        match res {
+            Ordering::Equal => {
+                println!("p1 == p2");           
+        
+            }
+            Ordering::Less => {
+                println!("p1 < p2: Correct order");
+                indices.push(pair_num);
+
+            }
+            Ordering::Greater => {
+                println!("p1 > p2: Wrong order");
+            }
+        }
+    }
+    return indices;
+}
+
 #[cfg(test)]
 mod tests {
-    use std::array;
+
 
     // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;
 
     #[test]
     fn array_compare_1() {
-        let mut data_bytes = String::from(
+        let data_bytes = String::from(
             "[1,1,3,1,1]
         [1,1,5,1,1]
         
@@ -146,56 +200,18 @@ mod tests {
         [1,[2,[3,[4,[5,6,0]]]],8,9]"
         );
 
-        let data_bytes_no_newlines: Vec<char> = data_bytes
-            .clone()
-            .chars()
-            .filter(|b| *b != '\n' && *b != ' ')
-            .collect();
+        let arrays= parse_string_to_arrays(data_bytes);
 
-        let mut arrays: Vec<ArrElement> = Vec::new();
+        let indices = process_pairs_and_get_correct_indices(arrays);
+        assert_eq!(indices, [1,2,4,6]);
+        let sum:usize = indices.iter().sum();
+        assert_eq!(13, sum);
 
-        let mut i = 0;
-        while i < data_bytes_no_newlines.len() {
-            let c: char = data_bytes_no_newlines[i];
-            i += 1;
-            if c == '[' {
-                let elem = consume_this_array(&data_bytes_no_newlines, &mut i);
-                match elem {
-                    Some(a) =>
-                        match a {
-                            ArrElement::Arr(arr) => {
-                                arrays.push(ArrElement::Arr(arr));
-                            }
-                            _ => {}
-                        }
-                    _ => {}
-                }
-            }
-        }
-
-        for i in (0..arrays.len()).step_by(2) {
-            let res = compare_packets(&arrays[i + 0], &arrays[i + 1]);
-            let pair_num = i / 2 + 1;
-            match res {
-                Ordering::Equal => {
-                    println!("p1 == p2");           
-                    assert!(false);         
-                    
-                }
-                Ordering::Less => {
-                    println!("p1 < p2: Correct order");
-                    assert!( pair_num == 1 || pair_num == 2 || pair_num == 4 || pair_num == 6 );
-
-                }
-                Ordering::Greater => {
-                    println!("p1 > p2: Wrong order");
-                    assert!( pair_num == 3 || pair_num == 5 || pair_num == 7 || pair_num == 8 );
-                }
-            }
-        }
-
-        println!("len = {}", data_bytes_no_newlines.len());
     }
+
+
+
+
 }
 
 pub fn main() -> io::Result<()> {
