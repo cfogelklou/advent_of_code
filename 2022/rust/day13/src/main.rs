@@ -29,15 +29,11 @@ fn consume_this_array(data_bytes: &Vec<char>, i: &mut usize) -> Option<ArrElemen
         match c {
             // Opening bracket, start a new instance to consume it
             '[' => {
-                let elem = consume_this_array(data_bytes, i);
-                match elem {
-                    Some(a) =>
-                        match a {
-                            ArrElement::Arr(arr) => {
-                                arrays.push(ArrElement::Arr(arr));
-                            }
-                            _ => {}
-                        }
+                let a = consume_this_array(data_bytes, i).unwrap();
+                match a {
+                    ArrElement::Arr(arr) => {
+                        arrays.push(ArrElement::Arr(arr));
+                    }
                     _ => {}
                 }
             }
@@ -74,15 +70,11 @@ fn parse_string_to_arrays(data_bytes: &String) -> Vec<ArrElement> {
         let c: char = data_bytes_no_newlines[i];
         i += 1;
         if c == '[' {
-            let elem = consume_this_array(&data_bytes_no_newlines, &mut i);
-            match elem {
-                Some(a) =>
-                    match a {
-                        ArrElement::Arr(arr) => {
-                            arrays.push(ArrElement::Arr(arr));
-                        }
-                        _ => {}
-                    }
+            let a = consume_this_array(&data_bytes_no_newlines, &mut i).unwrap();
+            match a {
+                ArrElement::Arr(arr) => {
+                    arrays.push(ArrElement::Arr(arr));
+                }
                 _ => {}
             }
         }
