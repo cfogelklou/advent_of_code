@@ -47,7 +47,7 @@ jobs:
 
       - name: Rust & Cargo - AoC 2022 day 4
         working-directory: 2022/rust/day4
-        run: cargo check && cargo test && cargo run input.txt        
+        run: cargo check && cargo test && cargo run input.txt
 
       - name: Rust & Cargo - AoC 2022 day 5
         working-directory: 2022/rust/day5
@@ -55,31 +55,35 @@ jobs:
 
       - name: Rust & Cargo - AoC 2022 day 6
         working-directory: 2022/rust/day6
-        run: cargo check && cargo test && cargo run input.txt     
+        run: cargo check && cargo test && cargo run input.txt
 
       - name: Rust & Cargo - AoC 2022 day 7
         working-directory: 2022/rust/day7
-        run: cargo check && cargo test && cargo run input.txt                          
+        run: cargo check && cargo test && cargo run input.txt
 
       - name: Rust & Cargo - AoC 2022 day 8
         working-directory: 2022/rust/day8
-        run: cargo check && cargo test && cargo run input.txt           
+        run: cargo check && cargo test && cargo run input.txt
 
       - name: Rust & Cargo - AoC 2022 day 9
         working-directory: 2022/rust/day9
-        run: cargo check && cargo test && cargo run input.txt           
+        run: cargo check && cargo test && cargo run input.txt
 
       - name: Rust & Cargo - AoC 2022 day 10
         working-directory: 2022/rust/day10
-        run: cargo check && cargo test && cargo run input.txt 
+        run: cargo check && cargo test && cargo run input.txt
 
       - name: Rust & Cargo - AoC 2022 day 11
         working-directory: 2022/rust/day11
-        run: cargo check && cargo test && cargo run input.txt 
+        run: cargo check && cargo test && cargo run input.txt
 
       - name: Rust & Cargo - AoC 2022 day 12
         working-directory: 2022/rust/day12
-        run: cargo check && cargo test && cargo run input.txt         
+        run: cargo check && cargo test && cargo run input.txt
+
+      - name: Rust & Cargo - AoC 2022 day 13
+        working-directory: 2022/rust/day13
+        run: cargo check && cargo test && cargo run input.txt
 
       - name: Prepare build directory (AoC C++)
         run: |
