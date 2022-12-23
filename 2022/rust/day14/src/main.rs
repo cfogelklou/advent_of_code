@@ -169,10 +169,8 @@ mod tests {
         println!("");
     }
 
-
-
-
 }
+
 
 pub fn main() -> io::Result<()> {
     let filename = if std::env::args().len() >= 2 {
