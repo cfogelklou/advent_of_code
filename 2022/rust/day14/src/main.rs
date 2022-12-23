@@ -121,20 +121,29 @@ fn drop_sand(
         let mut y = sandsource.1;
         let mut next_y = y + 1;
         sand_kernels += 1;
+        if (sand_kernels % 256) == 0 {
+            draw_world(min_dim, max_dim, world);
+        }
         while still_falling {
             if y == floor_y {
+                assert_eq!(false, there_is_a_floor);
                 still_falling = false;
                 still_going = false;
                 println!("Infinite looping, sand will fall forever");
                 draw_world(min_dim, max_dim, world);
-            } else if !is_floor_or_something(world, there_is_a_floor,&(x, next_y), floor_y) {
+            } else if there_is_a_floor && next_y == floor_y {
+                // Stuck here, insert it.
+                still_falling = false;
+                world.insert((x, y), 'o');
+                
+            } else if !world.contains_key(&(x, next_y)) {
                 y = next_y;
                 next_y += 1;
-            } else if !is_floor_or_something(world, there_is_a_floor,&(x - 1, next_y), floor_y) {
+            } else if !world.contains_key(&(x - 1, next_y)) {
                 y = next_y;
                 next_y += 1;
                 x = x - 1;
-            } else if !is_floor_or_something(world, there_is_a_floor,&(x + 1, next_y), floor_y) {
+            } else if !world.contains_key(&(x + 1, next_y)) {
                 y = next_y;
                 next_y += 1;
                 x = x + 1;
@@ -146,7 +155,6 @@ fn drop_sand(
                     still_going = false;
                 } else {
                     world.insert((x, y), 'o');
-                    draw_world(min_dim, max_dim, world);
                 }
             }
         }
@@ -179,8 +187,8 @@ mod tests {
         }
 
         let sandsource = (500, 0);
-        draw_world(&min_dim, &max_dim, &mut world);
         let sand_kernels = drop_sand(&sandsource, &min_dim, &max_dim, &mut world, false);
+        draw_world(&min_dim, &max_dim, &mut world);
         println!("sand kernels 1: {}", sand_kernels);
         assert_eq!(24, sand_kernels);
         println!("");
@@ -208,8 +216,8 @@ mod tests {
         }
 
         let sandsource = (500, 0);
-        draw_world(&min_dim, &max_dim, &mut world);
         let sand_kernels = drop_sand(&sandsource, &min_dim, &max_dim, &mut world, true);
+        draw_world(&min_dim, &max_dim, &mut world);
         println!("sand kernels 2: {}", sand_kernels);
         assert_eq!(93, sand_kernels);
         println!("");
@@ -239,8 +247,8 @@ pub fn main() -> io::Result<()> {
         }
     
         let sandsource = (500, 0);
-        draw_world(&min_dim, &max_dim, &mut world);
         let sand_kernels = drop_sand(&sandsource, &min_dim, &max_dim, &mut world, false);
+        draw_world(&min_dim, &max_dim, &mut world);
         println!("sand kernels: {}", sand_kernels);
         println!("");
     
