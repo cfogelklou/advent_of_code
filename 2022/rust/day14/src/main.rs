@@ -1,22 +1,13 @@
 use std::{ io::{ self } };
 //use std::array;
 mod utils;
-use std::cmp::Ordering;
 use std::collections::HashMap;
 
-/*
-        const NEXT: [(usize, usize); 4] = [
-            (1, 0),
-            (usize::MAX, 0),
-            (0, 1),
-            (0, usize::MAX),
-        ];
-*/
-
+#[allow(dead_code)]
 fn draw_world(min_dim: &(i32, i32), max_dim: &(i32, i32), world: &mut HashMap<(i32, i32), char>) {
     println!("\n");
-    let y0 = -1;//min_dim.1 - 20;
-    let y1 = max_dim.1+3;
+    let y0 = -1; //min_dim.1 - 20;
+    let y1 = max_dim.1 + 3;
     for y in y0..y1 + 1 {
         let x0 = min_dim.0 - 10;
         let x1 = max_dim.0 + 10;
@@ -32,6 +23,7 @@ fn draw_world(min_dim: &(i32, i32), max_dim: &(i32, i32), world: &mut HashMap<(i
     }
 }
 
+#[allow(dead_code)]
 fn extract_lines_to_vec(vec_in: &Vec<String>) -> Vec<Vec<(i32, i32)>> {
     let mut vecs: Vec<Vec<(i32, i32)>> = Vec::new();
     for line in vec_in {
@@ -46,12 +38,12 @@ fn extract_lines_to_vec(vec_in: &Vec<String>) -> Vec<Vec<(i32, i32)>> {
             })
             .collect();
 
-        println!("len = {}", xy.len());
         vecs.push(xy);
     }
     return vecs;
 }
 
+#[allow(dead_code)]
 fn fill_world(
     vecs: Vec<Vec<(i32, i32)>>,
     min_dim: &mut (i32, i32),
@@ -94,17 +86,7 @@ fn fill_world(
     }
 }
 
-fn is_floor_or_something(world: &mut HashMap<(i32, i32), char>, there_is_a_floor: bool, key:&(i32, i32), floor: i32) -> bool {
-    let mut rval:bool = false;
-    if there_is_a_floor && floor <= key.1 {
-        rval = true;
-    }
-    else if world.contains_key(key) {
-        rval = true;
-    }
-    return rval;
-}
-
+#[allow(dead_code)]
 fn drop_sand(
     sandsource: &(i32, i32),
     min_dim: &(i32, i32),
@@ -121,9 +103,6 @@ fn drop_sand(
         let mut y = sandsource.1;
         let mut next_y = y + 1;
         sand_kernels += 1;
-        if (sand_kernels % 256) == 0 {
-            draw_world(min_dim, max_dim, world);
-        }
         while still_falling {
             if y == floor_y {
                 assert_eq!(false, there_is_a_floor);
@@ -135,7 +114,6 @@ fn drop_sand(
                 // Stuck here, insert it.
                 still_falling = false;
                 world.insert((x, y), 'o');
-                
             } else if !world.contains_key(&(x, next_y)) {
                 y = next_y;
                 next_y += 1;
@@ -159,7 +137,9 @@ fn drop_sand(
             }
         }
     }
-    if there_is_a_floor { sand_kernels += 1; }
+    if there_is_a_floor {
+        sand_kernels += 1;
+    }
     return sand_kernels;
 }
 
@@ -192,8 +172,6 @@ mod tests {
         println!("sand kernels 1: {}", sand_kernels);
         assert_eq!(24, sand_kernels);
         println!("");
-
-      
     }
 
     #[test]
@@ -212,7 +190,6 @@ mod tests {
         if true {
             let vecs: Vec<Vec<(i32, i32)>> = extract_lines_to_vec(&vec_in);
             fill_world(vecs, &mut min_dim, &mut max_dim, &mut world);
-
         }
 
         let sandsource = (500, 0);
@@ -221,8 +198,7 @@ mod tests {
         println!("sand kernels 2: {}", sand_kernels);
         assert_eq!(93, sand_kernels);
         println!("");
-
-    }    
+    }
 }
 
 pub fn main() -> io::Result<()> {
@@ -236,42 +212,39 @@ pub fn main() -> io::Result<()> {
     let vec_in: Vec<String> = utils::test_input_to_vec(data_bytes, true);
     assert_ne!(0, vec_in.len());
 
-    if (false) {
+    if true {
         let mut world: HashMap<(i32, i32), char> = HashMap::new();
         let mut min_dim: (i32, i32) = (i32::MAX, i32::MAX);
         let mut max_dim: (i32, i32) = (i32::MIN, i32::MIN);
-    
+
         {
             let vecs: Vec<Vec<(i32, i32)>> = extract_lines_to_vec(&vec_in);
             fill_world(vecs, &mut min_dim, &mut max_dim, &mut world);
         }
-    
+
         let sandsource = (500, 0);
         let sand_kernels = drop_sand(&sandsource, &min_dim, &max_dim, &mut world, false);
         draw_world(&min_dim, &max_dim, &mut world);
-        println!("sand kernels: {}", sand_kernels);
+        println!("sand kernels 1: {}", sand_kernels);
         println!("");
-    
     }
 
-    if (true) {
+    if true {
         let mut world: HashMap<(i32, i32), char> = HashMap::new();
         let mut min_dim: (i32, i32) = (i32::MAX, i32::MAX);
         let mut max_dim: (i32, i32) = (i32::MIN, i32::MIN);
-    
+
         {
             let vecs: Vec<Vec<(i32, i32)>> = extract_lines_to_vec(&vec_in);
             fill_world(vecs, &mut min_dim, &mut max_dim, &mut world);
         }
-    
+
         let sandsource = (500, 0);
         draw_world(&min_dim, &max_dim, &mut world);
         let sand_kernels = drop_sand(&sandsource, &min_dim, &max_dim, &mut world, true);
-        println!("sand kernels: {}", sand_kernels);
+        println!("sand kernels 2: {}", sand_kernels);
         println!("");
-    
     }
-
 
     Ok(())
 }
