@@ -130,12 +130,16 @@ fn count_safe_reports_remove(vecs: Vec<Vec<i32>>) -> i32 {
     for vec in vecs {
         let mut safe = false;
 
+        // If it's safe as is, then no need to try removing any elements
         if is_safe_report(&vec) {
             safe = true;
         } else {
+            // Try removing each element and see if it's safe
             for i in 0..vec.len() {
                 let mut vec2 = vec.clone();
                 vec2.remove(i);
+
+                // Is it safe now?
                 if is_safe_report(&vec2) {
                     safe = true;
                     break;
