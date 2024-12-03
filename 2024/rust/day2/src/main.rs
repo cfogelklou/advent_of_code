@@ -32,12 +32,29 @@ So, in this example, 2 reports are safe.
 
 Analyze the unusual data from the engineers. How many reports are safe?
 
+--- Part Two ---
+The engineers are surprised by the low number of safe reports until they realize they forgot to tell you about the Problem Dampener.
+
+The Problem Dampener is a reactor-mounted module that lets the reactor safety systems tolerate a single bad level in what would otherwise be a safe report. It's like the bad level never happened!
+
+Now, the same rules apply as before, except if removing a single level from an unsafe report would make it safe, the report instead counts as safe.
+
+More of the above example's reports are now safe:
+
+7 6 4 2 1: Safe without removing any level.
+1 2 7 8 9: Unsafe regardless of which level is removed.
+9 7 6 2 1: Unsafe regardless of which level is removed.
+1 3 2 4 5: Safe by removing the second level, 3.
+8 6 4 4 1: Safe by removing the third level, 4.
+1 3 6 7 9: Safe without removing any level.
+Thanks to the Problem Dampener, 4 reports are actually safe!
+
+Update your analysis by handling situations where the Problem Dampener can remove a single level from unsafe reports. How many reports are now safe?
 
 */
 use std::io::{self};
 //use std::array;
 mod utils;
-use std::cmp::Ordering;
 
 #[allow(dead_code)]
 fn all_same_direction(vec: &Vec<i32>) -> bool {
@@ -59,6 +76,7 @@ fn all_same_direction(vec: &Vec<i32>) -> bool {
     return (increasing ^ decreasing) && !same;
 }
 
+#[allow(dead_code)]
 fn levels_ok(vec: &Vec<i32>) -> bool {
     // Return true if all elements are either increasing or decreasing
     let min_diff: i32 = 1;
@@ -73,13 +91,71 @@ fn levels_ok(vec: &Vec<i32>) -> bool {
     return ok;
 }
 
+#[allow(dead_code)]
+fn parse_data(data: String) -> Vec<Vec<i32>> {
+    let data = utils::test_input_to_vec(data, false);
+    let mut vecs: Vec<Vec<i32>> = Vec::new();
+    for i in 0..data.len() {
+        let words: Vec<&str> = data[i].split_whitespace().collect();
+        let mut v = Vec::new();
+        for j in 0..words.len() {
+            v.push(utils::robust_to_int(words[j]));
+        }
+        vecs.push(v);
+    }
+    vecs
+}
+
+#[allow(dead_code)]
+fn is_safe_report(vec: &Vec<i32>) -> bool {
+    let is_inc_or_dec = all_same_direction(vec);
+    let is_level_ok = levels_ok(vec);
+    return is_inc_or_dec && is_level_ok;
+}
+
+#[allow(dead_code)]
+fn count_safe_reports(vecs: Vec<Vec<i32>>) -> i32 {
+    let mut safe_count: i32 = 0;
+    for vec in vecs {
+        if is_safe_report(&vec) {
+            safe_count += 1;
+        }
+    }
+    return safe_count;
+}
+
+#[allow(dead_code)]
+fn count_safe_reports_remove(vecs: Vec<Vec<i32>>) -> i32 {
+    let mut safe_count: i32 = 0;
+    for vec in vecs {
+        let mut safe = false;
+
+        if is_safe_report(&vec) {
+            safe = true;
+        } else {
+            for i in 0..vec.len() {
+                let mut vec2 = vec.clone();
+                vec2.remove(i);
+                if is_safe_report(&vec2) {
+                    safe = true;
+                    break;
+                }
+            }
+        }
+        if safe {
+            safe_count += 1;
+        }
+    }
+    return safe_count;
+}
+
 #[cfg(test)]
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;
 
     #[test]
-    fn safe_noses() {
+    fn test_safe_noses() {
         let data_bytes = String::from(
             "   7 6 4 2 1
                 1 2 7 8 9
@@ -88,35 +164,33 @@ mod tests {
                 8 6 4 4 1
                 1 3 6 7 9",
         );
-        let data = utils::test_input_to_vec(data_bytes, false);
 
-        // Create an array of 5 Vec<i32> to hold the data
-        let mut vecs: Vec<Vec<i32>> = Vec::new();
+        let vecs = parse_data(data_bytes);
+        let safe_count = count_safe_reports(vecs);
 
-        for i in 0..data.len() {
-            let words: Vec<&str> = data[i].split_whitespace().collect();
-            let mut v = Vec::new();
-            for j in 0..words.len() {
-                v.push(utils::robust_to_int(words[j]));
-            }
-            vecs.push(v);
-        }
-
-        // For each Vec<i32>, are they the same?
-        let mut safe_count: i32 = 0;
-        for i in 0..vecs.len() {
-            let vec_a = &vecs[i];
-            // print vec_a
-            println!("{:?}", vec_a);
-            let is_inc_or_dec = all_same_direction(vec_a);
-            let is_level_ok = levels_ok(vec_a);
-            if (is_inc_or_dec && is_level_ok) {
-                safe_count += 1;
-            }
-        }
-
-        // Expect distance to be 2
+        // Expect safe_count to be 2
         assert_eq!(safe_count, 2);
+        println!("Safe reports: {}", safe_count);
+    }
+
+    #[test]
+    fn test_safe_noses_2() {
+        let data_bytes = String::from(
+            "   7 6 4 2 1
+                1 2 7 8 9
+                9 7 6 2 1
+                1 3 2 4 5
+                8 6 4 4 1
+                1 3 6 7 9",
+        );
+
+        let vecs = parse_data(data_bytes);
+
+        let safe_count2 = count_safe_reports_remove(vecs);
+        // Expect safe_count to be 4
+        assert_eq!(safe_count2, 4);
+
+        println!("Safe reports: {}", safe_count2);
     }
 }
 
@@ -124,11 +198,21 @@ pub fn main() -> io::Result<()> {
     let filename = if std::env::args().len() >= 2 {
         std::env::args().nth(1).unwrap()
     } else {
-        String::from("day1/input.txt")
+        String::from("day2/input.txt")
     };
+
     let data_bytes = std::fs::read_to_string(filename).unwrap();
-    let data = utils::test_input_to_vec(data_bytes, false);
-    // Convert each string to an integer
+    {
+        let vecs = parse_data(data_bytes.clone());
+        let safe_count = count_safe_reports(vecs);
+        println!("Safe reports: {}", safe_count);
+    }
+
+    {
+        let vecs = parse_data(data_bytes);
+        let safe_count2 = count_safe_reports_remove(vecs);
+        println!("Safe reports: {}", safe_count2);
+    }
 
     Ok(())
 }

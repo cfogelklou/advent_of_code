@@ -73,7 +73,6 @@ Once again consider your left and right lists. What is their similarity score?
 use std::io::{self};
 //use std::array;
 mod utils;
-use std::cmp::Ordering;
 
 #[allow(dead_code)]
 fn calculate_distance(left: &mut Vec<i32>, right: &mut Vec<i32>) -> i64 {
@@ -96,13 +95,13 @@ fn calculate_similarity_score(left: &mut Vec<i32>, right: &mut Vec<i32>) -> i64 
     let mut similarity_score: i64 = 0;
     for i in 0..left.len() {
         let left64 = left[i] as i64;
-        let mut count64: i64 = 0;
+
         //for j in 0..right.len() {
         //    if left[i] == right[j] {
         //        count64 += 1;
         //    }
         //}
-        count64 = right.iter().filter(|&&x| x == left[i]).count() as i64;
+        let count64: i64 = right.iter().filter(|&&x| x == left[i]).count() as i64;
         similarity_score += left64 * count64;
     }
 
