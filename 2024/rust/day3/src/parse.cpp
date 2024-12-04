@@ -2,6 +2,9 @@
 #include <iostream>
 #include <stdint.h>
 
+// "Gotos considered harmful" - Edsger W. Dijkstra
+// ...except when they are useful for parsing a grammar. - Chris Fogelklou
+
 // use
 // cargo clean && cargo build
 
