@@ -60,7 +60,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_safe_noses() {
+    fn test_parse() {
         let data_bytes =
             String::from("xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))");
 
@@ -74,7 +74,7 @@ mod tests {
     }
 
     #[test]
-    fn test_safe_noses2() {
+    fn test_parse_do_dont() {
         let data_bytes = String::from(
             "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))",
         );
