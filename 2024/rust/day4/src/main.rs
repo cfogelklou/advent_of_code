@@ -186,15 +186,15 @@ mod tests {
     fn test_crossword_1() {
         let data_bytes = String::from(
             "....XXMAS.
-.SAMXMS...
-...S..A...
-..A.A.MS.X
-XMASAMX.MM
-X.....XA.A
-S.S.S.S.SS
-.A.A.A.A.A
-..M.M.M.MM
-.X.X.XMASX",
+            .SAMXMS...
+            ...S..A...
+            ..A.A.MS.X
+            XMASAMX.MM
+            X.....XA.A
+            S.S.S.S.SS
+            .A.A.A.A.A
+            ..M.M.M.MM
+            .X.X.XMASX",
         );
         println!("Data bytes: {}", data_bytes);
         let grid = utils::create_grid_from_string(data_bytes);
@@ -206,15 +206,15 @@ S.S.S.S.SS
     fn test_crossword_2() {
         let data_bytes = String::from(
             "MMMSXXMASM
-MSAMXMSMSA
-AMXSXMAAMM
-MSAMASMSMX
-XMASAMXAMM
-XXAMMXXAMA
-SMSMSASXSS
-SAXAMASAAA
-MAMMMXMMMM
-MXMXAXMASX",
+            MSAMXMSMSA
+            AMXSXMAAMM
+            MSAMASMSMX
+            XMASAMXAMM
+            XXAMMXXAMA
+            SMSMSASXSS
+            SAXAMASAAA
+            MAMMMXMMMM
+            MXMXAXMASX",
         );
         println!("Data bytes: {}", data_bytes);
         let grid = utils::create_grid_from_string(data_bytes);
@@ -226,15 +226,15 @@ MXMXAXMASX",
     fn test_crossword_x_mas() {
         let data_bytes = String::from(
             "MMMSXXMASM
-MSAMXMSMSA
-AMXSXMAAMM
-MSAMASMSMX
-XMASAMXAMM
-XXAMMXXAMA
-SMSMSASXSS
-SAXAMASAAA
-MAMMMXMMMM
-MXMXAXMASX",
+            MSAMXMSMSA
+            AMXSXMAAMM
+            MSAMASMSMX
+            XMASAMXAMM
+            XXAMMXXAMA
+            SMSMSASXSS
+            SAXAMASAAA
+            MAMMMXMMMM
+            MXMXAXMASX",
         );
         println!("Data bytes: {}", data_bytes);
         let grid = utils::create_grid_from_string(data_bytes);
@@ -252,12 +252,12 @@ pub fn main() -> io::Result<()> {
     let data_bytes = std::fs::read_to_string(filename).unwrap();
     println!("Data bytes: {}", data_bytes);
     let grid = utils::create_grid_from_string(data_bytes);
-    let count = search_letter0(grid.clone(), "XMAS");
+    let word_search = search_letter0(grid.clone(), "XMAS");
 
-    println!("Count: {}", count);
+    println!("wordsearch: {}", word_search);
 
-    let count2 = search_x_mas(grid);
-    println!("Count2: {}", count2);
+    let num_x_mas = search_x_mas(grid);
+    println!("num_x_mas: {}", num_x_mas);
 
     Ok(())
 }
