@@ -102,7 +102,7 @@ pub fn main() -> io::Result<()> {
     let data_bytes = std::fs::read_to_string(filename).unwrap();
 
     unsafe {
-        let c_string = CString::new(data_bytes.clone()).expect("CString::new failed");
+        let c_string = CString::new(data_bytes.clone()).unwrap();
         let c_ptr = c_string.as_ptr();
 
         let result = parse(c_ptr);
@@ -110,7 +110,7 @@ pub fn main() -> io::Result<()> {
     }
 
     unsafe {
-        let c_string = CString::new(data_bytes.clone()).expect("CString::new failed");
+        let c_string = CString::new(data_bytes.clone()).unwrap();
         let c_ptr = c_string.as_ptr();
         let result = parse_do_dont(c_ptr);
         println!("Result 2: {}", result);
