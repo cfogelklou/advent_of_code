@@ -4,5 +4,9 @@
   "rust-analyzer.rustfmt.extraArgs": ["--config", "wrap_comments=true"],
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer"
+  },
+  "files.associations": {
+    "*.cbproj": "xml",
+    "__locale": "cpp"
   }
 }
