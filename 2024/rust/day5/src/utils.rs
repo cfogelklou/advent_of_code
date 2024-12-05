@@ -42,16 +42,26 @@ pub fn robust_to_int(s: &str) -> i32 {
 }
 
 #[allow(dead_code)]
+pub fn test_comma_delimited_string_to_int_vec(mut page: String, do_trim: bool) -> Vec<i32> {
+    if do_trim {
+        page = page.trim().to_string();
+    }
+    let page_vec: Vec<&str> = page.split(',').collect();
+    let mut page_list: Vec<i32> = Vec::new();
+    for p in page_vec {
+        let n = robust_to_int(p);
+        page_list.push(n);
+    }
+
+    return page_list;
+}
+
+#[allow(dead_code)]
 pub fn test_comma_delimited_input_to_int_vec(s: String, do_trim: bool) -> Vec<Vec<i32>> {
     let pages_vec = test_input_to_vec(s, do_trim);
     let mut pages: Vec<Vec<i32>> = Vec::new();
     for page in pages_vec {
-        let page_vec: Vec<&str> = page.split(",").collect();
-        let mut page_list: Vec<i32> = Vec::new();
-        for p in page_vec {
-            let n = robust_to_int(p);
-            page_list.push(n);
-        }
+        let page_list: Vec<i32> = test_comma_delimited_string_to_int_vec(page, do_trim);
         pages.push(page_list);
     }
     return pages;
