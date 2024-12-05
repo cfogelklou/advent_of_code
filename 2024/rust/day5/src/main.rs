@@ -88,7 +88,6 @@ Determine which updates are already in the correct order. What do you get if you
         If they are not, insert the page at the end
 
 */
-
 use std::collections::HashMap;
 #[allow(unused_imports)]
 use std::ffi::CString;
@@ -149,6 +148,35 @@ fn sorted_insert_after(pages: &mut Vec<i32>, page: i32, insert_after: i32) {
     pages.insert(insert_index, page);
 }
 
+#[allow(dead_code)]
+fn parse_rules(rule_bytes: &str) -> Vec<(i32, i32)> {
+    let rules_vec = utils::test_input_to_vec(rule_bytes.to_string(), true);
+    let mut rules: Vec<(i32, i32)> = Vec::new();
+    for rule in rules_vec {
+        let rule_vec: Vec<&str> = rule.split("|").collect();
+        let rule1 = rule_vec[0].parse::<i32>().unwrap();
+        let rule2 = rule_vec[1].parse::<i32>().unwrap();
+        rules.push((rule1, rule2));
+    }
+    rules
+}
+
+#[allow(dead_code)]
+fn build_rule_map(rules: Vec<(i32, i32)>) -> PageMap {
+    let mut rule_map: PageMap = HashMap::new();
+    for rule in rules {
+        rule_map
+            .entry(rule.0)
+            .or_insert_with(PageRules::new)
+            .add_page_before_me(rule.1);
+        rule_map
+            .entry(rule.1)
+            .or_insert_with(PageRules::new)
+            .add_page_after_me(rule.0);
+    }
+    rule_map
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -183,30 +211,10 @@ mod tests {
         );
 
         println!("rule_bytes: {}", rule_bytes);
-        let rules_vec = utils::test_input_to_vec(rule_bytes, true);
-        let mut rules: Vec<(i32, i32)> = Vec::new();
-        for rule in rules_vec {
-            println!("{}", rule);
-            let rule_vec: Vec<&str> = rule.split("|").collect();
-            let rule1 = rule_vec[0].parse::<i32>().unwrap();
-            let rule2 = rule_vec[1].parse::<i32>().unwrap();
-            rules.push((rule1, rule2));
-        }
-
+        let rules = parse_rules(&rule_bytes);
         println!("rules: {:?}", rules);
 
-        // Usage example:
-        let mut rule_map: PageMap = HashMap::new();
-        for rule in rules {
-            rule_map
-                .entry(rule.0)
-                .or_insert_with(PageRules::new)
-                .add_page_before_me(rule.1);
-            rule_map
-                .entry(rule.1)
-                .or_insert_with(PageRules::new)
-                .add_page_after_me(rule.0);
-        }
+        let rule_map = build_rule_map(rules);
 
         let pages_bytes = String::from(
             "75,47,61,53,29
