@@ -137,18 +137,6 @@ impl PageRules {
 }
 
 #[allow(dead_code)]
-fn sorted_insert_before(pages: &mut Vec<i32>, page: i32, insert_before: i32) {
-    let mut insert_index = pages.len();
-    for (i, p) in pages.iter().enumerate() {
-        if *p == insert_before {
-            insert_index = i;
-            break;
-        }
-    }
-    pages.insert(insert_index, page);
-}
-
-#[allow(dead_code)]
 fn sorted_insert_after(pages: &mut Vec<i32>, page: i32, insert_after: i32) {
     let mut insert_index = pages.len();
     for (i, p) in pages.iter().enumerate() {
@@ -268,18 +256,6 @@ fn is_page_sorted(rule_map: &PageMap, sorted_page: &Vec<i32>) -> bool {
 
     println!("{:?}", sorted_page);
     return true;
-}
-
-#[allow(dead_code)]
-fn get_middle_pages(sorted_pages: &Vec<Vec<i32>>, correct_pages: &Vec<bool>) -> Vec<i32> {
-    let mut middle_pages: Vec<i32> = Vec::new();
-    for i in 0..sorted_pages.len() {
-        if correct_pages[i] {
-            let middle_index = sorted_pages[i].len() / 2;
-            middle_pages.push(sorted_pages[i][middle_index]);
-        }
-    }
-    middle_pages
 }
 
 #[cfg(test)]
